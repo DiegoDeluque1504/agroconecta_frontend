@@ -67,8 +67,8 @@ export class ProductoService {
     return this.http.post<ProductoDetalle>(`${API}/productos/crear/`, datos);
   }
 
-  actualizarProducto(id: number, datos: Partial<DatosProducto>): Observable<ProductoDetalle> {
-    return this.http.put<ProductoDetalle>(`${API}/productos/${id}/gestionar/`, datos);
+  actualizarProducto(id: number, datos: FormData): Observable<ProductoDetalle> {
+    return this.http.patch<ProductoDetalle>(`${API}/productos/${id}/gestionar/`, datos);
   }
 
   eliminarProducto(id: number): Observable<{ mensaje: string }> {

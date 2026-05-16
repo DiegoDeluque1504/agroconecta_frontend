@@ -136,17 +136,22 @@ export class PublicarProductoComponent implements OnInit {
     const v = this.form.value;
 
     if (this.modoEdicion() && this.productoId) {
+      // Siempre usar FormData para que la foto nueva se incluya si el usuario la cambió
+      const fd = new FormData();
+      fd.append('nombre', v.nombre);
+      fd.append('descripcion', v.descripcion);
+      fd.append('precio', String(v.precio));
+      fd.append('cantidad_disponible', String(v.cantidad_disponible));
+      fd.append('unidad_medida', v.unidad_medida);
+      fd.append('categoria_id', String(v.categoria_id));
+      fd.append('municipio_id', String(v.municipio_id));
+      fd.append('estado', v.estado);
+      if (this.fotoSeleccionada) {
+        fd.append('foto', this.fotoSeleccionada);
+      }
+
       this.productoService
-        .actualizarProducto(this.productoId, {
-          nombre: v.nombre,
-          descripcion: v.descripcion,
-          precio: String(v.precio),
-          cantidad_disponible: String(v.cantidad_disponible),
-          unidad_medida: v.unidad_medida,
-          categoria_id: v.categoria_id,
-          municipio_id: v.municipio_id,
-          estado: v.estado,
-        })
+        .actualizarProducto(this.productoId, fd)
         .subscribe({
           next: () => {
             this.cargando.set(false);

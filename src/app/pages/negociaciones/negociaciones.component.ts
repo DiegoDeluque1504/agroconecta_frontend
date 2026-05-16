@@ -200,10 +200,11 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
     return u ? `${u.first_name} ${u.last_name}` : '';
   }
 
-  // Productor puede cerrar; comprador solo cancelar
+  // Productor puede cerrar; comprador solo cancelar — comparamos por ID, no por nombre
   soyProductorEnChat(): boolean {
     const d = this.detalle();
-    return !!d && d.productor_nombre === this.nombreCompleto();
+    const uid = this.auth.usuario()?.id;
+    return !!d && !!uid && d.productor_id === uid;
   }
 
   getEstadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {

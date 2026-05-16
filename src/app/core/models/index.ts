@@ -171,7 +171,9 @@ export interface NegociacionDetalle {
   estado: 'abierta' | 'cerrada' | 'cancelada';
   producto_id: number;
   producto_nombre: string;
+  comprador_id: number;
   comprador_nombre: string;
+  productor_id: number;
   productor_nombre: string;
   mensajes: Mensaje[];
   created_at: string;

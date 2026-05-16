@@ -112,7 +112,15 @@
         </div>
 
         <!-- Botón de negociación -->
-        @if (p.estado === 'activo') {
+        @if (esElProductor()) {
+          <p-button
+            label="Es tu producto"
+            icon="pi pi-user"
+            [disabled]="true"
+            styleClass="w-full"
+            severity="secondary"
+          />
+        } @else if (p.estado === 'activo') {
           <p-button
             label="Iniciar Negociación"
             icon="pi pi-comments"

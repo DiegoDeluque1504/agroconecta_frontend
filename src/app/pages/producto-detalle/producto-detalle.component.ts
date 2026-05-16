@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService } from '../../core/services/producto.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ProductoDetalle } from '../../core/models/index';
 
 @Component({
@@ -32,14 +33,16 @@ import { ProductoDetalle } from '../../core/models/index';
   templateUrl: './producto-detalle.component.html',
   styleUrl: './producto-detalle.component.css',
 })
-export class ProductoDetalleComponent implements OnInit {
+export class ProductoDetalleComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productoService = inject(ProductoService);
+  private auth = inject(AuthService);
   private toast = inject(MessageService);
 
   producto = signal<ProductoDetalle | null>(null);
   cargando = signal(true);
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Opciones del carrusel de imágenes
   galleriaOpts = {
@@ -58,6 +61,10 @@ export class ProductoDetalleComponent implements OnInit {
     this.cargarProducto(id);
   }
 
+  ngOnDestroy(): void {
+    if (this.redirectTimer) clearTimeout(this.redirectTimer);
+  }
+
   cargarProducto(id: number): void {
     this.cargando.set(true);
     this.productoService.getProducto(id).subscribe({
@@ -72,7 +79,7 @@ export class ProductoDetalleComponent implements OnInit {
           summary: 'Error',
           detail: 'No se pudo cargar el producto',
         });
-        setTimeout(() => this.router.navigate(['/catalogo']), 2000);
+        this.redirectTimer = setTimeout(() => this.router.navigate(['/catalogo']), 2000);
       },
     });
   }
@@ -99,6 +106,13 @@ export class ProductoDetalleComponent implements OnInit {
       inactivo: 'danger',
     };
     return mapa[estado] ?? 'secondary';
+  }
+
+  // True si el usuario autenticado es el productor dueño de este producto
+  esElProductor(): boolean {
+    const p = this.producto();
+    const uid = this.auth.usuario()?.id;
+    return !!p && !!uid && p.productor.id === uid;
   }
 
   // Navega al chat de negociación con este producto
