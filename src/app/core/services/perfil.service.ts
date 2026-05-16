@@ -2,8 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Usuario } from '../models/index';
+import { environment } from '../../../environments/environment';
 
-const API = 'http://localhost:8000/api/v1';
+const API = environment.apiUrl;
 
 // Datos que el usuario puede editar en su perfil
 export interface ActualizarPerfil {

@@ -8,8 +8,9 @@ import {
   CategoriaProducto,
   Municipio,
 } from '../models/index';
+import { environment } from '../../../environments/environment';
 
-const API = 'http://localhost:8000/api/v1';
+const API = environment.apiUrl;
 
 export interface FiltrosCatalogo {
   search?: string;

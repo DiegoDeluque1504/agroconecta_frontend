@@ -87,16 +87,17 @@ npm install
 
 ### 3. Configurar la URL del backend
 
-La URL base del backend se define directamente en cada servicio. Si tu backend corre en un puerto o host diferente a `http://localhost:8000`, debes actualizar la constante `API` en cada archivo de servicio:
+La URL base del backend se gestiona en un único archivo de entorno. Si tu backend corre en un host o puerto diferente a `http://localhost:8000`, edita **solo este archivo**:
 
+```typescript
+// src/environments/environment.ts
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8000/api/v1',  // ← Cambia solo aquí
+};
 ```
-src/app/core/services/auth.service.ts       → const API = 'http://localhost:8000/api/v1'
-src/app/core/services/producto.service.ts   → const API = 'http://localhost:8000/api/v1'
-src/app/core/services/negociacion.service.ts → const API = 'http://localhost:8000/api/v1'
-src/app/core/services/pedido.service.ts     → const API = 'http://localhost:8000/api/v1'
-src/app/core/services/perfil.service.ts     → const API = 'http://localhost:8000/api/v1'
-src/app/core/services/notificacion.service.ts → const API = 'http://localhost:8000/api/v1'
-```
+
+Todos los servicios importan automáticamente `environment.apiUrl`, por lo que un único cambio se propaga a toda la app.
 
 ### 4. Levantar el servidor de desarrollo
 
@@ -480,31 +481,35 @@ Registro (rol: productor)
 
 ## ⚙️ Variables de Entorno
 
-Actualmente la URL del backend está hardcodeada como `http://localhost:8000/api/v1` en cada servicio. Para futuros entornos (staging, producción), se recomienda mover esta URL a `src/environments/environment.ts`:
+La URL del backend está centralizada en `src/environments/`. Todos los servicios la leen desde `environment.apiUrl`.
 
 ```typescript
-// src/environments/environment.ts (desarrollo)
+// src/environments/environment.ts — Desarrollo local
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api/v1'
+  apiUrl: 'http://localhost:8000/api/v1',
 };
 
-// src/environments/environment.prod.ts (producción)
+// src/environments/environment.prod.ts — Producción
 export const environment = {
   production: true,
-  apiUrl: 'https://api.tudominio.com/api/v1'
+  apiUrl: 'http://localhost:8000/api/v1', // ← Cambiar por la URL del servidor real
 };
 ```
 
-Y en cada servicio reemplazar:
-```typescript
-// Antes:
-const API = 'http://localhost:8000/api/v1';
+### Uso en servicios
 
-// Después:
+Cada servicio importa la variable de esta forma:
+
+```typescript
 import { environment } from '../../../environments/environment';
+
 const API = environment.apiUrl;
 ```
+
+### Build de producción
+
+Angular CLI sustituye automáticamente `environment.ts` por `environment.prod.ts` durante `ng build --configuration=production`. No se requiere ningún cambio manual de archivos.
 
 ---
 

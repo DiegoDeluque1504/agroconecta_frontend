@@ -4,9 +4,9 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { RespuestaLogin, RespuestaRegistro, Usuario } from '../models/index';
+import { environment } from '../../../environments/environment';
 
-// URL base del backend Django
-const API = 'http://localhost:8000/api/v1';
+const API = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
