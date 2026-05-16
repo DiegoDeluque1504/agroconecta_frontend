@@ -90,6 +90,17 @@
             }
             <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [outlined]="true" (onClick)="cambiarEstado('cancelada')" />
           }
+          <!-- Botón Crear Pedido: solo para el productor cuando la negociación está cerrada -->
+          @if (d.estado === 'cerrada' && soyProductorEnChat()) {
+            <p-button
+              label="Crear Pedido"
+              icon="pi pi-shopping-bag"
+              severity="success"
+              size="small"
+              [loading]="creandoPedido()"
+              (onClick)="crearPedido()"
+            />
+          }
         </div>
       </div>
 

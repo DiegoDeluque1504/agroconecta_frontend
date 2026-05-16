@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { NegociacionService } from '../../core/services/negociacion.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PedidoService } from '../../core/services/pedido.service';
 import { NegociacionLista, NegociacionDetalle, Mensaje } from '../../core/models/index';
 
 @Component({
@@ -33,6 +34,7 @@ import { NegociacionLista, NegociacionDetalle, Mensaje } from '../../core/models
 export class NegociacionesComponent implements OnInit, AfterViewChecked {
   private negociacionService = inject(NegociacionService);
   private auth = inject(AuthService);
+  private pedidoService = inject(PedidoService);
   private route = inject(ActivatedRoute);
   private toast = inject(MessageService);
 
@@ -44,6 +46,7 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
   cargandoLista = signal(true);
   cargandoChat = signal(false);
   enviando = signal(false);
+  creandoPedido = signal(false); // estado del botón Crear Pedido
   negociacionActivaId = signal<number | null>(null);
   nuevoMensaje = '';
 
@@ -185,6 +188,32 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
           summary: 'Error',
           detail: err.error?.error ?? 'No se pudo cambiar el estado',
         });
+      },
+    });
+  }
+
+  // ── Crear pedido desde negociación cerrada ────────────────
+
+  crearPedido(): void {
+    const id = this.negociacionActivaId();
+    if (!id) return;
+
+    this.creandoPedido.set(true);
+    this.pedidoService.crearDesdeNegociacion(id).subscribe({
+      next: (pedido) => {
+        this.creandoPedido.set(false);
+        // Refrescamos el detalle para que el botón desaparezca si el backend lo requiere
+        this.cargarDetalle(id);
+        this.toast.add({
+          severity: 'success',
+          summary: '¡Pedido creado!',
+          detail: `Pedido #${pedido.id} generado correctamente`,
+        });
+      },
+      error: (err) => {
+        this.creandoPedido.set(false);
+        const msg = err.error?.detail ?? err.error?._mensaje ?? 'No se pudo crear el pedido';
+        this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
       },
     });
   }
