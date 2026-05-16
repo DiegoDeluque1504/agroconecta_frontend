@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -31,55 +31,57 @@ import { NegociacionLista, NegociacionDetalle, Mensaje } from '../../core/models
   templateUrl: './negociaciones.component.html',
   styleUrl: './negociaciones.component.css',
 })
-export class NegociacionesComponent implements OnInit, AfterViewChecked {
+export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewChecked {
   private negociacionService = inject(NegociacionService);
-  private auth = inject(AuthService);
-  private pedidoService = inject(PedidoService);
-  private route = inject(ActivatedRoute);
-  private toast = inject(MessageService);
+  private auth               = inject(AuthService);
+  private pedidoService      = inject(PedidoService);
+  private route              = inject(ActivatedRoute);
+  private toast              = inject(MessageService);
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
 
-  // Estado reactivo
-  lista = signal<NegociacionLista[]>([]);
-  detalle = signal<NegociacionDetalle | null>(null);
-  cargandoLista = signal(true);
-  cargandoChat = signal(false);
-  enviando = signal(false);
-  creandoPedido = signal(false); // estado del botón Crear Pedido
+  lista               = signal<NegociacionLista[]>([]);
+  detalle             = signal<NegociacionDetalle | null>(null);
+  cargandoLista       = signal(true);
+  cargandoChat        = signal(false);
+  enviando            = signal(false);
+  creandoPedido       = signal(false);
   negociacionActivaId = signal<number | null>(null);
-  nuevoMensaje = '';
+  nuevoMensaje        = '';
+
+  // Audio
+  grabando          = signal(false);
+  segundosGrabacion = signal(0);
+  private mediaRecorder: MediaRecorder | null = null;
+  private chunks: Blob[] = [];
+  private timerGrabacion: ReturnType<typeof setInterval> | null = null;
+  private streamActivo: MediaStream | null = null;
 
   private debeScroll = false;
 
   ngOnInit(): void {
     this.cargarLista();
-
-    // Si viene de detalle producto: /negociaciones?producto=5
     const productoId = Number(this.route.snapshot.queryParamMap.get('producto'));
     if (productoId) this.iniciarDesdeProducto(productoId);
   }
 
-  ngAfterViewChecked(): void {
-    if (this.debeScroll) {
-      this.scrollAlFinal();
-      this.debeScroll = false;
-    }
+  ngOnDestroy(): void {
+    this.detenerGrabacion(false);
   }
 
-  // ── Lista lateral ──────────────────────────────────────
+  ngAfterViewChecked(): void {
+    if (this.debeScroll) { this.scrollAlFinal(); this.debeScroll = false; }
+  }
+
+  // ── Lista ──────────────────────────────────────────────
 
   cargarLista(): void {
     this.cargandoLista.set(true);
     this.negociacionService.getMisNegociaciones().subscribe({
-      next: (data) => {
-        this.lista.set(data);
-        this.cargandoLista.set(false);
-      },
+      next: (data) => { this.lista.set(data); this.cargandoLista.set(false); },
       error: (err) => {
         this.cargandoLista.set(false);
-        const msg = err.error?.detail ?? err.error?._mensaje ?? 'No se pudo cargar los chats';
-        this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?._mensaje ?? 'No se pudo cargar los chats' });
       },
     });
   }
@@ -96,12 +98,11 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
         this.detalle.set(data);
         this.cargandoChat.set(false);
         this.debeScroll = true;
-        this.cargarLista(); // refresca badge de no leídos
+        this.cargarLista();
       },
       error: (err) => {
         this.cargandoChat.set(false);
-        const msg = err.error?.detail ?? err.error?._mensaje ?? 'No se pudo cargar el chat';
-        this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?._mensaje ?? 'No se pudo cargar el chat' });
       },
     });
   }
@@ -120,35 +121,25 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
       },
       error: (err) => {
         this.cargandoChat.set(false);
-        // Backend devuelve negociacion_id si ya existe una abierta
         const idExistente = err.error?.negociacion_id;
-        if (idExistente) {
-          this.seleccionarChat(idExistente);
-          return;
-        }
-        this.toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.error ?? 'No se pudo iniciar la negociación',
-        });
+        if (idExistente) { this.seleccionarChat(idExistente); return; }
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?.error ?? 'No se pudo iniciar la negociación' });
       },
     });
   }
 
-  // ── Mensajes ───────────────────────────────────────────
+  // ── Texto ──────────────────────────────────────────────
 
   enviarMensaje(): void {
     const texto = this.nuevoMensaje.trim();
-    const id = this.negociacionActivaId();
-    const d = this.detalle();
+    const id    = this.negociacionActivaId();
+    const d     = this.detalle();
     if (!texto || !id || !d || d.estado !== 'abierta') return;
 
     this.enviando.set(true);
     this.negociacionService.enviarTexto(id, texto).subscribe({
       next: (mensaje) => {
-        this.detalle.update((prev) =>
-          prev ? { ...prev, mensajes: [...prev.mensajes, mensaje] } : prev
-        );
+        this.detalle.update((prev) => prev ? { ...prev, mensajes: [...prev.mensajes, mensaje] } : prev);
         this.nuevoMensaje = '';
         this.enviando.set(false);
         this.debeScroll = true;
@@ -156,26 +147,96 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
       },
       error: () => {
         this.enviando.set(false);
-        const msg = 'No se pudo enviar el mensaje. Intenta de nuevo.';
-        this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo enviar el mensaje' });
       },
     });
   }
 
   onEnter(event: Event): void {
     const e = event as KeyboardEvent;
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      this.enviarMensaje();
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.enviarMensaje(); }
+  }
+
+  // ── Audio ──────────────────────────────────────────────
+
+  async iniciarGrabacion(): Promise<void> {
+    if (this.grabando()) return;
+
+    try {
+      this.streamActivo = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      this.toast.add({ severity: 'warn', summary: 'Micrófono', detail: 'No se pudo acceder al micrófono. Verifica los permisos.' });
+      return;
+    }
+
+    this.chunks = [];
+    this.segundosGrabacion.set(0);
+    this.mediaRecorder = new MediaRecorder(this.streamActivo);
+
+    this.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) this.chunks.push(e.data);
+    };
+
+    this.mediaRecorder.onstop = () => {
+      const blob = new Blob(this.chunks, { type: 'audio/webm' });
+      this.enviarAudio(blob);
+      this.streamActivo?.getTracks().forEach((t) => t.stop());
+      this.streamActivo = null;
+    };
+
+    this.mediaRecorder.start();
+    this.grabando.set(true);
+
+    this.timerGrabacion = setInterval(() => {
+      this.segundosGrabacion.update((s) => {
+        if (s >= 59) { this.detenerGrabacion(true); return 0; }
+        return s + 1;
+      });
+    }, 1000);
+  }
+
+  detenerGrabacion(enviar: boolean): void {
+    if (this.timerGrabacion) { clearInterval(this.timerGrabacion); this.timerGrabacion = null; }
+    this.grabando.set(false);
+    this.segundosGrabacion.set(0);
+
+    if (!enviar) {
+      // Cancela sin enviar
+      this.streamActivo?.getTracks().forEach((t) => t.stop());
+      this.streamActivo = null;
+      this.chunks = [];
+      return;
+    }
+
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.stop(); // dispara onstop → enviarAudio()
     }
   }
 
-  // ── Estado (cerrar / cancelar) ───────────────────────────
+  private enviarAudio(blob: Blob): void {
+    const id = this.negociacionActivaId();
+    if (!id || blob.size === 0) return;
+
+    this.enviando.set(true);
+    this.negociacionService.enviarAudio(id, blob).subscribe({
+      next: (mensaje) => {
+        this.detalle.update((prev) => prev ? { ...prev, mensajes: [...prev.mensajes, mensaje] } : prev);
+        this.enviando.set(false);
+        this.debeScroll = true;
+        this.cargarLista();
+      },
+      error: () => {
+        this.enviando.set(false);
+        this.toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo enviar el audio' });
+      },
+    });
+  }
+
+  // ── Estado ─────────────────────────────────────────────
 
   cambiarEstado(estado: 'cerrada' | 'cancelada'): void {
     const id = this.negociacionActivaId();
     if (!id) return;
-
     this.negociacionService.cambiarEstado(id, estado).subscribe({
       next: (data) => {
         this.detalle.set(data);
@@ -183,42 +244,29 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
         this.toast.add({ severity: 'success', summary: 'Listo', detail: `Negociación ${estado}` });
       },
       error: (err) => {
-        this.toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.error ?? 'No se pudo cambiar el estado',
-        });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?.error ?? 'No se pudo cambiar el estado' });
       },
     });
   }
-
-  // ── Crear pedido desde negociación cerrada ────────────────
 
   crearPedido(): void {
     const id = this.negociacionActivaId();
     if (!id) return;
-
     this.creandoPedido.set(true);
     this.pedidoService.crearDesdeNegociacion(id).subscribe({
       next: (pedido) => {
         this.creandoPedido.set(false);
-        // Refrescamos el detalle para que el botón desaparezca si el backend lo requiere
         this.cargarDetalle(id);
-        this.toast.add({
-          severity: 'success',
-          summary: '¡Pedido creado!',
-          detail: `Pedido #${pedido.id} generado correctamente`,
-        });
+        this.toast.add({ severity: 'success', summary: '¡Pedido creado!', detail: `Pedido #${pedido.id} generado correctamente` });
       },
       error: (err) => {
         this.creandoPedido.set(false);
-        const msg = err.error?.detail ?? err.error?._mensaje ?? 'No se pudo crear el pedido';
-        this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?._mensaje ?? 'No se pudo crear el pedido' });
       },
     });
   }
 
-  // ── Helpers UI ───────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────
 
   esMio(mensaje: Mensaje): boolean {
     return mensaje.remitente === this.auth.usuario()?.id;
@@ -229,18 +277,15 @@ export class NegociacionesComponent implements OnInit, AfterViewChecked {
     return u ? `${u.first_name} ${u.last_name}` : '';
   }
 
-  // Productor puede cerrar; comprador solo cancelar — comparamos por ID, no por nombre
   soyProductorEnChat(): boolean {
-    const d = this.detalle();
+    const d   = this.detalle();
     const uid = this.auth.usuario()?.id;
     return !!d && !!uid && d.productor_id === uid;
   }
 
   getEstadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {
     const mapa: Record<string, 'success' | 'warn' | 'danger' | 'secondary'> = {
-      abierta: 'success',
-      cerrada: 'secondary',
-      cancelada: 'danger',
+      abierta: 'success', cerrada: 'secondary', cancelada: 'danger',
     };
     return mapa[estado] ?? 'secondary';
   }

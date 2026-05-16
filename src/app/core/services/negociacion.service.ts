@@ -36,6 +36,14 @@ export class NegociacionService {
     });
   }
 
+  // POST /negociaciones/{id}/mensajes/ — enviar audio
+  enviarAudio(negociacionId: number, audio: Blob): Observable<Mensaje> {
+    const fd = new FormData();
+    fd.append('tipo', 'audio');
+    fd.append('audio', audio, 'mensaje.webm');
+    return this.http.post<Mensaje>(`${API}/negociaciones/${negociacionId}/mensajes/`, fd);
+  }
+
   // POST /negociaciones/{id}/estado/ — cerrar o cancelar
   cambiarEstado(
     negociacionId: number,

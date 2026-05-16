@@ -131,12 +131,49 @@
             placeholder="Escribe un mensaje..."
             class="input-mensaje"
             (keydown)="onEnter($event)"
-            [disabled]="enviando()"
+            [disabled]="enviando() || grabando()"
           />
+
+          @if (!grabando()) {
+            <p-button
+              icon="pi pi-microphone"
+              [rounded]="true"
+              severity="secondary"
+              [outlined]="true"
+              styleClass="btn-mic"
+              pTooltip="Mantén para grabar"
+              (onClick)="iniciarGrabacion()"
+              [disabled]="enviando()"
+            />
+          } @else {
+            <div class="grabando-wrap">
+              <span class="grabando-indicador">
+                <i class="pi pi-circle-fill"></i> {{ segundosGrabacion() }}s
+              </span>
+              <p-button
+                icon="pi pi-check"
+                severity="success"
+                [rounded]="true"
+                styleClass="btn-mic"
+                pTooltip="Enviar audio"
+                (onClick)="detenerGrabacion(true)"
+              />
+              <p-button
+                icon="pi pi-times"
+                severity="danger"
+                [rounded]="true"
+                [outlined]="true"
+                styleClass="btn-mic"
+                pTooltip="Cancelar"
+                (onClick)="detenerGrabacion(false)"
+              />
+            </div>
+          }
+
           <p-button
             icon="pi pi-send"
             [loading]="enviando()"
-            [disabled]="!nuevoMensaje.trim()"
+            [disabled]="!nuevoMensaje.trim() || grabando()"
             (onClick)="enviarMensaje()"
             styleClass="btn-enviar"
           />

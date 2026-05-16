@@ -207,3 +207,29 @@
   .negociaciones-page { grid-template-columns: 1fr; }
   .lista-panel { max-height: 40vh; }
 }
+/* Grabación de audio */
+.btn-mic {
+  flex-shrink: 0;
+}
+.grabando-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.grabando-indicador {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #dc2626;
+  animation: pulso 1s infinite;
+  white-space: nowrap;
+}
+.grabando-indicador i {
+  font-size: 0.6rem;
+}
+@keyframes pulso {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
