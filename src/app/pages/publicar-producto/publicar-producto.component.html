@@ -97,18 +97,18 @@
       }
     </div>
 
+    <!-- Foto única al crear -->
     @if (!modoEdicion()) {
       <div class="form-field">
         <label>Foto del producto</label>
         <div class="file-upload-area" (click)="fotoInput.click()">
           <input
             #fotoInput
-            id="foto"
             type="file"
             accept="image/*"
             (change)="onFoto($event)"
           />
-          <label class="file-upload-label" for="foto">
+          <label class="file-upload-label">
             <i class="pi pi-image"></i>
             @if (fotoSeleccionada) {
               <strong>{{ fotoSeleccionada.name }}</strong>
@@ -121,9 +121,65 @@
         </div>
         @if (fotoPreviewUrl) {
           <div class="foto-preview">
-            <img [src]="fotoPreviewUrl" alt="Vista previa de la foto" />
+            <img [src]="fotoPreviewUrl" alt="Vista previa" />
           </div>
         }
+      </div>
+    }
+
+    <!-- Galería de fotos en modo edición -->
+    @if (modoEdicion()) {
+      <div class="form-field">
+        <label>Fotos del producto</label>
+
+        <!-- Grid de fotos existentes -->
+        @if (fotosExistentes().length > 0) {
+          <div class="galeria-grid">
+            @for (foto of fotosExistentes(); track foto.id) {
+              <div class="galeria-item">
+                <img [src]="foto.url_cloudinary" [alt]="'Foto del producto'" />
+                @if (foto.es_principal) {
+                  <span class="badge-principal">Principal</span>
+                }
+                <button
+                  type="button"
+                  class="btn-eliminar-foto"
+                  [disabled]="eliminandoFotoId() === foto.id"
+                  (click)="eliminarFoto(foto.id)"
+                  title="Eliminar foto"
+                >
+                  @if (eliminandoFotoId() === foto.id) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                    <i class="pi pi-trash"></i>
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="sin-fotos">Este producto no tiene fotos todavía.</p>
+        }
+
+        <!-- Botón agregar foto -->
+        <div class="agregar-foto-wrap">
+          <input
+            #fotoAdicional
+            type="file"
+            accept="image/*"
+            (change)="agregarFoto($event)"
+          />
+          <p-button
+            type="button"
+            label="Agregar foto"
+            icon="pi pi-plus"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="subiendoFoto()"
+            (onClick)="fotoAdicional.click()"
+          />
+          <small>Máx. recomendado: 5 MB por foto</small>
+        </div>
       </div>
     }
 
@@ -142,5 +198,6 @@
         [loading]="cargando()"
       />
     </div>
+
   </form>
 </div>

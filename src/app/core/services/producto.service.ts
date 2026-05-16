@@ -74,4 +74,16 @@ export class ProductoService {
   eliminarProducto(id: number): Observable<{ mensaje: string }> {
     return this.http.delete<{ mensaje: string }>(`${API}/productos/${id}/gestionar/`);
   }
+
+  agregarFoto(productoId: number, foto: File): Observable<{ id: number; url_cloudinary: string; es_principal: boolean }> {
+    const fd = new FormData();
+    fd.append('foto', foto);
+    return this.http.post<{ id: number; url_cloudinary: string; es_principal: boolean }>(
+      `${API}/productos/${productoId}/fotos/agregar/`, fd
+    );
+  }
+
+  eliminarFoto(fotoId: number): Observable<{ mensaje: string }> {
+    return this.http.delete<{ mensaje: string }>(`${API}/productos/fotos/${fotoId}/eliminar/`);
+  }
 }
