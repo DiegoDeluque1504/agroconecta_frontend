@@ -55,7 +55,7 @@ export class NotificacionesComponent implements OnInit {
   marcarLeida(notif: Notificacion): void {
     if (notif.leida) {
       // Si ya está leída y tiene URL destino, navega directamente
-      if (notif.url_destino) this.router.navigateByUrl(notif.url_destino);
+      if (notif.url_destino?.startsWith('/')) this.router.navigateByUrl(notif.url_destino);
       return;
     }
 

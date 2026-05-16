@@ -130,10 +130,25 @@ export class PublicarProductoComponent implements OnInit, OnDestroy {
   onFoto(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file  = input.files?.[0] ?? null;
+
+    if (file) {
+      const tiposValidos = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!tiposValidos.includes(file.type)) {
+        this.toast.add({ severity: 'warn', summary: 'Formato inválido', detail: 'Solo se permiten imágenes JPG, PNG o WEBP' });
+        input.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.toast.add({ severity: 'warn', summary: 'Archivo muy grande', detail: 'La imagen no puede superar los 5 MB' });
+        input.value = '';
+        return;
+      }
+    }
+
     this.fotoSeleccionada = file;
     if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     this.fotoPreviewUrl = file ? URL.createObjectURL(file) : null;
-  }
+}
 
   // ── Galería (modo edición) ───────────────────────────────────────────────
 
