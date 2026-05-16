@@ -1,0 +1,247 @@
+.detalle-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ── Botón volver ──────────────────────────────── */
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s;
+}
+
+.btn-volver:hover {
+  background: #f3f4f6;
+}
+
+/* ── Layout de dos columnas ────────────────────── */
+.detalle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ── Galería ────────────────────────────────────── */
+.galeria-wrap {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+:host ::ng-deep .galeria {
+  width: 100%;
+}
+
+.galeria-img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+}
+
+.thumb-img {
+  width: 60px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+/* ── Panel de información ──────────────────────── */
+.info-panel {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Categoría y estado */
+.info-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.categoria-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a7a46;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Nombre */
+.producto-nombre {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+  margin: 0;
+}
+
+/* Precio */
+.precio-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.precio {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f4c2a;
+}
+
+.unidad {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Datos clave */
+.datos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dato {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+}
+
+.dato i {
+  color: #1a7a46;
+  margin-top: 0.15rem;
+  font-size: 1rem;
+}
+
+.dato div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dato-label {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dato-valor {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Descripción */
+.descripcion h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.descripcion p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Card del productor */
+.productor-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  background: #f0fdf4;
+  border-radius: 0.75rem;
+  border: 1px solid #bbf7d0;
+}
+
+.productor-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1a7a46;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.productor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.productor-label {
+  font-size: 0.72rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.productor-nombre {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.productor-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rating-count {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Botón negociar */
+:host ::ng-deep .btn-negociar {
+  background: #1a7a46 !important;
+  border-color: #1a7a46 !important;
+}
+
+:host ::ng-deep .btn-negociar:hover {
+  background: #0f4c2a !important;
+  border-color: #0f4c2a !important;
+}
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 768px) {
+  .detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .galeria-img {
+    height: 280px;
+  }
+
+  .datos-grid {
+    grid-template-columns: 1fr;
+  }
+}

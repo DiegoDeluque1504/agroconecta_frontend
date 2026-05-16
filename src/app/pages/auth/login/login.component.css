@@ -1,0 +1,91 @@
+/* Fondo con gradiente verde agrícola */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f4c2a 0%, #1a7a46 50%, #2d9e5f 100%);
+  padding: 1rem;
+}
+
+/* Tarjeta central */
+.auth-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+}
+
+/* Encabezado */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f4c2a;
+  margin-bottom: 0.25rem;
+}
+
+.auth-header p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Campos del formulario */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+/* Hace que los inputs de PrimeNG ocupen todo el ancho */
+.form-field input,
+.form-field :host ::ng-deep .p-password {
+  width: 100%;
+}
+
+/* Mensaje de error de validación */
+.error-msg {
+  color: #ef4444;
+  font-size: 0.8rem;
+}
+
+/* Pie con link al registro */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: #1a7a46;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}

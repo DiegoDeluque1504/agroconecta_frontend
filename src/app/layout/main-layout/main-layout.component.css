@@ -1,0 +1,6 @@
+/* Empuja el contenido para que no quede debajo del header fijo */
+.main-content {
+  margin-top: 64px;
+  min-height: calc(100vh - 64px);
+  background: #f3f4f6;
+}

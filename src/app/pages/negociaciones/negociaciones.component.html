@@ -1,0 +1,140 @@
+<p-toast />
+
+<div class="negociaciones-page">
+
+  <!-- Panel izquierdo: lista de chats -->
+  <aside class="lista-panel">
+    <div class="lista-header">
+      <h2><i class="pi pi-comments"></i> Negociaciones</h2>
+    </div>
+
+    @if (cargandoLista()) {
+      @for (i of [1,2,3,4]; track i) {
+        <div class="chat-item-skeleton">
+          <p-skeleton shape="circle" size="44px" />
+          <div class="skeleton-lines">
+            <p-skeleton width="70%" height="1rem" />
+            <p-skeleton width="50%" height="0.8rem" />
+          </div>
+        </div>
+      }
+    } @else if (lista().length === 0) {
+      <div class="lista-vacia">
+        <i class="pi pi-inbox"></i>
+        <p>No tienes negociaciones aún</p>
+        <small>Ve al catálogo y pulsa "Iniciar Negociación"</small>
+      </div>
+    } @else {
+      @for (chat of lista(); track chat.id) {
+        <button
+          class="chat-item"
+          [class.activo]="negociacionActivaId() === chat.id"
+          (click)="seleccionarChat(chat.id)"
+        >
+          <div class="chat-avatar">
+            @if (chat.producto_foto) {
+              <img [src]="chat.producto_foto" [alt]="chat.producto_nombre" />
+            } @else {
+              <i class="pi pi-image"></i>
+            }
+          </div>
+          <div class="chat-info">
+            <div class="chat-top">
+              <span class="chat-nombre">{{ chat.producto_nombre }}</span>
+              <span class="chat-fecha">{{ formatearFecha(chat.updated_at) }}</span>
+            </div>
+            <div class="chat-bottom">
+              <span class="chat-preview">{{ chat.ultimo_mensaje ?? 'Sin mensajes' }}</span>
+              @if (chat.mensajes_no_leidos > 0) {
+                <span class="badge-no-leidos">{{ chat.mensajes_no_leidos }}</span>
+              }
+            </div>
+          </div>
+          <p-tag [value]="chat.estado" [severity]="getEstadoSeverity(chat.estado)" />
+        </button>
+      }
+    }
+  </aside>
+
+  <!-- Panel derecho: conversación -->
+  <section class="chat-panel">
+
+    @if (!negociacionActivaId() && !cargandoChat()) {
+      <div class="chat-vacio">
+        <i class="pi pi-comments"></i>
+        <p>Selecciona una negociación para ver los mensajes</p>
+      </div>
+    }
+
+    @if (cargandoChat()) {
+      <div class="chat-cargando">
+        <p-skeleton height="3rem" styleClass="mb-3" />
+        @for (i of [1,2,3]; track i) {
+          <p-skeleton [width]="i % 2 === 0 ? '60%' : '45%'" height="2.5rem" styleClass="mb-2" />
+        }
+      </div>
+    }
+
+    @if (!cargandoChat() && detalle(); as d) {
+      <!-- Cabecera -->
+      <div class="chat-header">
+        <div>
+          <h3>{{ d.producto_nombre }}</h3>
+          <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
+        </div>
+        <div class="chat-acciones">
+          <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
+          @if (d.estado === 'abierta') {
+            @if (soyProductorEnChat()) {
+              <p-button label="Cerrar" icon="pi pi-check" severity="secondary" size="small" (onClick)="cambiarEstado('cerrada')" />
+            }
+            <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [outlined]="true" (onClick)="cambiarEstado('cancelada')" />
+          }
+        </div>
+      </div>
+
+      <!-- Burbujas de mensajes -->
+      <div #chatContainer class="mensajes-wrap">
+        @if (d.mensajes.length === 0) {
+          <div class="sin-mensajes"><p>Empieza la conversación</p></div>
+        }
+        @for (msg of d.mensajes; track msg.id) {
+          <div class="mensaje" [class.mio]="esMio(msg)" [class.otro]="!esMio(msg)">
+            <span class="mensaje-autor">{{ msg.remitente_nombre }}</span>
+            @if (msg.tipo === 'texto') {
+              <p class="mensaje-texto">{{ msg.contenido }}</p>
+            } @else {
+              <audio controls [src]="msg.url_audio!" class="mensaje-audio"></audio>
+            }
+            <span class="mensaje-hora">{{ formatearFecha(msg.created_at) }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Input (solo si está abierta) -->
+      @if (d.estado === 'abierta') {
+        <div class="input-wrap">
+          <input
+            pInputText
+            [(ngModel)]="nuevoMensaje"
+            placeholder="Escribe un mensaje..."
+            class="input-mensaje"
+            (keydown)="onEnter($event)"
+            [disabled]="enviando()"
+          />
+          <p-button
+            icon="pi pi-send"
+            [loading]="enviando()"
+            [disabled]="!nuevoMensaje.trim()"
+            (onClick)="enviarMensaje()"
+            styleClass="btn-enviar"
+          />
+        </div>
+      } @else {
+        <div class="chat-cerrado">
+          <i class="pi pi-lock"></i> Esta negociación está {{ d.estado }} y no acepta más mensajes.
+        </div>
+      }
+    }
+  </section>
+</div>

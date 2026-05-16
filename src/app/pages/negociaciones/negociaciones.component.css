@@ -1,0 +1,209 @@
+/* Layout: lista | chat */
+.negociaciones-page {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  height: calc(100vh - 64px);
+  background: #f3f4f6;
+}
+
+.lista-panel {
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.lista-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lista-header i { color: #1a7a46; }
+
+/* Item de la lista */
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.chat-item:hover { background: #f9fafb; }
+.chat-item.activo { background: #f0fdf4; border-left: 3px solid #1a7a46; }
+
+.chat-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: #1a7a46;
+}
+
+.chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.chat-info { flex: 1; min-width: 0; }
+
+.chat-top, .chat-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-nombre {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-fecha { font-size: 0.72rem; color: #9ca3af; }
+.chat-preview { font-size: 0.8rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.badge-no-leidos {
+  background: #1a7a46;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+}
+
+.lista-vacia, .chat-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  color: #9ca3af;
+  text-align: center;
+  flex: 1;
+}
+
+/* Panel del chat */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chat-acciones { display: flex; align-items: center; gap: 0.5rem; }
+
+.mensajes-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mensaje { max-width: 70%; display: flex; flex-direction: column; gap: 0.2rem; }
+.mensaje.mio { align-self: flex-end; align-items: flex-end; }
+.mensaje.otro { align-self: flex-start; align-items: flex-start; }
+
+.mensaje-texto {
+  padding: 0.65rem 0.9rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.mio .mensaje-texto { background: #1a7a46; color: white; }
+.otro .mensaje-texto { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.mensaje-autor {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 0 0.25rem;
+}
+
+.mio .mensaje-autor { color: #1a7a46; }
+
+.mensaje-hora {
+  font-size: 0.68rem;
+  color: #9ca3af;
+  padding: 0 0.25rem;
+}
+
+.mensaje-audio {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 0.75rem;
+}
+
+.input-wrap {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.input-mensaje { flex: 1; }
+
+/* Botón enviar: forzamos que el ícono sea visible sobre el color del tema */
+:host ::ng-deep .btn-enviar {
+  background: #1a7a46 !important;
+  border-color: #1a7a46 !important;
+  min-width: 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .btn-enviar .p-button-icon {
+  color: white !important;
+  font-size: 1rem;
+}
+
+.chat-cerrado {
+  padding: 0.85rem 1.25rem;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .negociaciones-page { grid-template-columns: 1fr; }
+  .lista-panel { max-height: 40vh; }
+}

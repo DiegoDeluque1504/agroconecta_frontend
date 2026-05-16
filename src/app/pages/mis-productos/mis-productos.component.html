@@ -1,0 +1,60 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Mis productos</h1>
+      <p>{{ productos().length }} publicados</p>
+    </div>
+    <p-button label="Publicar nuevo" icon="pi pi-plus" routerLink="/publicar" />
+  </div>
+
+  @if (cargando()) {
+    <div class="grid">
+      @for (i of [1, 2, 3]; track i) {
+        <p-skeleton height="280px" borderRadius="1rem" />
+      }
+    </div>
+  } @else if (productos().length === 0) {
+    <div class="vacio">
+      <i class="pi pi-box"></i>
+      <p>Aún no tienes productos publicados</p>
+      <p-button label="Publicar el primero" icon="pi pi-plus" routerLink="/publicar" />
+    </div>
+  } @else {
+    <div class="grid">
+      @for (p of productos(); track p.id) {
+        <div class="card">
+          <div
+            class="card-img"
+            [style.background-image]="'url(' + (p.foto_principal || 'https://placehold.co/400x200/e8f5e9/2d9e5f?text=Sin+foto') + ')'"
+          ></div>
+          <div class="card-body">
+            <p-tag [value]="p.estado" [severity]="getEstadoSeverity(p.estado)" />
+            <h3>{{ p.nombre }}</h3>
+            <p class="precio">${{ p.precio }} / {{ p.unidad_medida }}</p>
+            <p class="meta">{{ p.cantidad_disponible }} disp. · {{ p.municipio_nombre }}</p>
+            <div class="acciones">
+              <p-button
+                label="Editar"
+                icon="pi pi-pencil"
+                [outlined]="true"
+                size="small"
+                (onClick)="editar(p.id)"
+              />
+              <p-button
+                label="Eliminar"
+                icon="pi pi-trash"
+                severity="danger"
+                [outlined]="true"
+                size="small"
+                (onClick)="confirmarEliminar(p)"
+              />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

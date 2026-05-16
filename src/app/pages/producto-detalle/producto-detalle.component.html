@@ -1,0 +1,135 @@
+<p-toast />
+
+<div class="detalle-page">
+
+  <!-- Botón volver -->
+  <div class="volver-wrap">
+    <button class="btn-volver" (click)="volver()">
+      <i class="pi pi-arrow-left"></i> Volver al catálogo
+    </button>
+  </div>
+
+  <!-- ── SKELETON mientras carga ──────────────────────────── -->
+  @if (cargando()) {
+    <div class="detalle-grid">
+      <p-skeleton height="420px" borderRadius="1rem" />
+      <div class="info-panel">
+        <p-skeleton width="40%" height="1rem" styleClass="mb-3" />
+        <p-skeleton width="80%" height="2rem" styleClass="mb-3" />
+        <p-skeleton width="30%" height="2rem" styleClass="mb-4" />
+        <p-skeleton height="1rem" styleClass="mb-2" />
+        <p-skeleton height="1rem" styleClass="mb-2" />
+        <p-skeleton width="60%" height="1rem" />
+      </div>
+    </div>
+  }
+
+  <!-- ── DETALLE DEL PRODUCTO ──────────────────────────────── -->
+  @if (!cargando() && producto(); as p) {
+    <div class="detalle-grid">
+
+      <!-- Galería de imágenes -->
+      <div class="galeria-wrap">
+        <p-galleria
+          [value]="imagenes"
+          [showThumbnails]="imagenes.length > 1"
+          [showIndicators]="false"
+          [circular]="true"
+          containerClass="galeria"
+        >
+          <ng-template #item let-item>
+            <img [src]="item.itemImageSrc" [alt]="item.alt" class="galeria-img" />
+          </ng-template>
+          <ng-template #thumbnail let-item>
+            <img [src]="item.itemImageSrc" [alt]="item.alt" class="thumb-img" />
+          </ng-template>
+        </p-galleria>
+      </div>
+
+      <!-- Panel de información -->
+      <div class="info-panel">
+
+        <!-- Categoría y estado -->
+        <div class="info-top">
+          <span class="categoria-badge">{{ p.categoria.nombre }}</span>
+          <p-tag
+            [value]="p.estado"
+            [severity]="getEstadoSeverity(p.estado)"
+          />
+        </div>
+
+        <!-- Nombre -->
+        <h1 class="producto-nombre">{{ p.nombre }}</h1>
+
+        <!-- Precio -->
+        <div class="precio-wrap">
+          <span class="precio">${{ p.precio }}</span>
+          <span class="unidad">por {{ p.unidad_medida }}</span>
+        </div>
+
+        <!-- Datos clave -->
+        <div class="datos-grid">
+          <div class="dato">
+            <i class="pi pi-box"></i>
+            <div>
+              <span class="dato-label">Disponible</span>
+              <span class="dato-valor">{{ p.cantidad_disponible }} {{ p.unidad_medida }}</span>
+            </div>
+          </div>
+          <div class="dato">
+            <i class="pi pi-map-marker"></i>
+            <div>
+              <span class="dato-label">Municipio</span>
+              <span class="dato-valor">{{ p.municipio.nombre }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        @if (p.descripcion) {
+          <div class="descripcion">
+            <h3>Descripción</h3>
+            <p>{{ p.descripcion }}</p>
+          </div>
+        }
+
+        <!-- Card del productor -->
+        <div class="productor-card">
+          <div class="productor-avatar">
+            {{ p.productor.nombre[0] }}
+          </div>
+          <div class="productor-info">
+            <span class="productor-label">Productor</span>
+            <span class="productor-nombre">{{ p.productor.nombre }}</span>
+            <div class="productor-rating">
+              <p-rating
+                [ngModel]="p.productor.calificacion_promedio"
+                [readonly]="true"
+              />
+              <span class="rating-count">({{ p.productor.total_calificaciones }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de negociación -->
+        @if (p.estado === 'activo') {
+          <p-button
+            label="Iniciar Negociación"
+            icon="pi pi-comments"
+            styleClass="btn-negociar w-full"
+            (onClick)="iniciarNegociacion()"
+          />
+        } @else {
+          <p-button
+            label="Producto no disponible"
+            icon="pi pi-ban"
+            [disabled]="true"
+            styleClass="w-full"
+          />
+        }
+
+      </div>
+    </div>
+  }
+
+</div>

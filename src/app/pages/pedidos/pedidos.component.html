@@ -1,0 +1,227 @@
+<p-toast />
+
+<div class="pedidos-page">
+
+  <!-- Panel izquierdo: lista -->
+  <aside class="lista-panel">
+    <div class="panel-header">
+      <h2><i class="pi pi-truck"></i> Mis Pedidos</h2>
+    </div>
+
+    @if (cargando()) {
+      @for (i of [1,2,3]; track i) {
+        <div class="pedido-skeleton">
+          <p-skeleton width="60%" height="1rem" />
+          <p-skeleton width="40%" height="0.8rem" />
+        </div>
+      }
+    } @else if (pedidos().length === 0) {
+      <div class="lista-vacia">
+        <i class="pi pi-inbox"></i>
+        <p>No tienes pedidos aún</p>
+      </div>
+    } @else {
+      @for (p of pedidos(); track p.id) {
+        <button
+          class="pedido-item"
+          [class.activo]="detalle()?.id === p.id"
+          (click)="verDetalle(p.id)"
+        >
+          <div class="pedido-item-top">
+            <span class="pedido-nombre">{{ p.producto_nombre }}</span>
+            <p-tag [value]="labelEstado(p.estado_actual)" [severity]="getSeverity(p.estado_actual)" />
+          </div>
+          <div class="pedido-item-bottom">
+            <span class="pedido-meta">
+              {{ auth.esProductor() ? p.comprador_nombre : p.productor_nombre }}
+            </span>
+            <span class="pedido-precio">$ {{ p.precio_total | number }}</span>
+          </div>
+          <small class="pedido-fecha">{{ formatFecha(p.created_at) }}</small>
+        </button>
+      }
+    }
+  </aside>
+
+  <!-- Panel derecho: detalle -->
+  <section class="detalle-panel">
+
+    @if (!detalle() && !cargandoDetalle()) {
+      <div class="detalle-vacio">
+        <i class="pi pi-truck"></i>
+        <p>Selecciona un pedido para ver los detalles</p>
+      </div>
+    }
+
+    @if (cargandoDetalle()) {
+      <div class="detalle-cargando">
+        <p-skeleton height="4rem" styleClass="mb-3" />
+        <p-skeleton height="2rem" styleClass="mb-2" />
+        <p-skeleton height="8rem" />
+      </div>
+    }
+
+    @if (!cargandoDetalle() && detalle(); as d) {
+
+      <div class="detalle-header">
+        <div>
+          <h3>{{ d.producto_nombre }}</h3>
+          <small>{{ d.comprador_nombre }} → {{ d.productor_nombre }}</small>
+        </div>
+        <div class="detalle-acciones">
+          <p-tag [value]="labelEstado(d.estado_actual)" [severity]="getSeverity(d.estado_actual)" />
+
+          <!-- El productor puede avanzar el estado -->
+          @if (auth.esProductor() && estadosSiguientes.length > 0) {
+            <p-button
+              label="Actualizar estado"
+              icon="pi pi-refresh"
+              size="small"
+              (onClick)="abrirDialogEstado()"
+            />
+          }
+
+          <!-- Calificar (si está entregado y no has calificado) -->
+          @if (d.estado_actual === 'entregado' && !d.ya_califique) {
+            <p-button
+              label="Calificar"
+              icon="pi pi-star"
+              severity="warn"
+              size="small"
+              (onClick)="abrirDialogCalificar()"
+            />
+          }
+        </div>
+      </div>
+
+      <!-- Resumen del pedido -->
+      <div class="resumen-grid">
+        <div class="resumen-item">
+          <span class="resumen-label">Cantidad</span>
+          <span class="resumen-valor">{{ d.cantidad_acordada }} unidades</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-label">Precio unitario</span>
+          <span class="resumen-valor">$ {{ d.precio_acordado | number }}</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-label">Total</span>
+          <span class="resumen-valor total">$ {{ d.precio_total | number }}</span>
+        </div>
+        @if (d.direccion_entrega) {
+          <div class="resumen-item">
+            <span class="resumen-label">Dirección</span>
+            <span class="resumen-valor">{{ d.direccion_entrega }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Historial de estados (timeline) -->
+      <div class="seccion">
+        <h4><i class="pi pi-history"></i> Historial</h4>
+        <p-timeline [value]="d.historial_estados" styleClass="timeline">
+          <ng-template pTemplate="marker" let-item>
+            <span class="timeline-marker">
+              <i class="pi {{ iconoEstado(item.estado) }}"></i>
+            </span>
+          </ng-template>
+          <ng-template pTemplate="content" let-item>
+            <div class="timeline-content">
+              <strong>{{ labelEstado(item.estado) }}</strong>
+              <small>{{ item.registrado_por_nombre }} — {{ formatFecha(item.created_at) }}</small>
+              @if (item.observacion) {
+                <p>{{ item.observacion }}</p>
+              }
+            </div>
+          </ng-template>
+        </p-timeline>
+      </div>
+
+      <!-- Calificaciones recibidas -->
+      @if (d.calificaciones.length > 0) {
+        <div class="seccion">
+          <h4><i class="pi pi-star-fill"></i> Calificaciones</h4>
+          @for (c of d.calificaciones; track c.id) {
+            <div class="calificacion-item">
+              <p-rating [ngModel]="c.puntuacion" [readonly]="true" />
+              <span><strong>{{ c.calificador_nombre }}</strong> calificó a {{ c.calificado_nombre }}</span>
+              @if (c.comentario) {
+                <p class="calificacion-comentario">{{ c.comentario }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </section>
+</div>
+
+<!-- Diálogo: cambiar estado -->
+<p-dialog
+  [(visible)]="dialogEstado"
+  header="Actualizar estado del pedido"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+>
+  <div class="dialog-body">
+    <label>Nuevo estado</label>
+    <p-select
+      [(ngModel)]="nuevoEstado"
+      [options]="estadosSiguientes"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Selecciona el estado"
+      styleClass="w-full"
+    />
+    <label style="margin-top: 1rem; display: block;">Observación (opcional)</label>
+    <textarea
+      pTextarea
+      [(ngModel)]="observacion"
+      rows="3"
+      class="w-full"
+      placeholder="Ej: El paquete salió a las 8am"
+    ></textarea>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dialogEstado = false" />
+    <p-button
+      label="Confirmar"
+      icon="pi pi-check"
+      [loading]="cambiandoEstado()"
+      [disabled]="!nuevoEstado"
+      (onClick)="confirmarCambioEstado()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo: calificar -->
+<p-dialog
+  [(visible)]="dialogCalificar"
+  header="Calificar pedido"
+  [modal]="true"
+  [style]="{ width: '380px' }"
+>
+  <div class="dialog-body">
+    <p>¿Cómo calificarías esta experiencia?</p>
+    <p-rating [(ngModel)]="puntuacion" />
+    <label style="margin-top: 1rem; display: block;">Comentario (opcional)</label>
+    <textarea
+      pTextarea
+      [(ngModel)]="comentarioCalif"
+      rows="3"
+      class="w-full"
+      placeholder="Cuéntanos tu experiencia..."
+    ></textarea>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dialogCalificar = false" />
+    <p-button
+      label="Enviar calificación"
+      icon="pi pi-star"
+      severity="warn"
+      [loading]="calificando()"
+      [disabled]="puntuacion === 0"
+      (onClick)="confirmarCalificacion()"
+    />
+  </ng-template>
+</p-dialog>

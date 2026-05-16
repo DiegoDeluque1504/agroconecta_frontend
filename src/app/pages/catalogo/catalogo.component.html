@@ -1,0 +1,166 @@
+<p-toast />
+
+<div class="catalogo-page">
+
+  <!-- ── CABECERA ──────────────────────────────────────────── -->
+  <div class="catalogo-header">
+    <div class="catalogo-header-inner">
+      <div>
+        <h1>Catálogo de Productos</h1>
+        <p>{{ totalProductos() }} productos disponibles</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FILTROS ───────────────────────────────────────────── -->
+  <div class="filtros-bar">
+    <div class="filtros-inner">
+
+      <!-- Búsqueda -->
+      <div class="filtro-search">
+        <i class="pi pi-search search-icon"></i>
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="busqueda"
+          (ngModelChange)="onBusqueda()"
+          placeholder="Buscar productos..."
+          class="search-input"
+        />
+      </div>
+
+      <!-- Categoría -->
+      <p-select
+        [(ngModel)]="categoriaSeleccionada"
+        [options]="categorias()"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Categoría"
+        [showClear]="true"
+        (onChange)="onCategoria()"
+        styleClass="filtro-select"
+      />
+
+      <!-- Orden -->
+      <p-select
+        [(ngModel)]="ordenSeleccionado"
+        [options]="opcionesOrden"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="onOrden()"
+        styleClass="filtro-select"
+      />
+
+      <!-- Limpiar filtros -->
+      @if (busqueda || categoriaSeleccionada) {
+        <button class="btn-limpiar" (click)="limpiarFiltros()">
+          <i class="pi pi-times"></i> Limpiar
+        </button>
+      }
+
+    </div>
+  </div>
+
+  <!-- ── GRID DE PRODUCTOS ──────────────────────────────────── -->
+  <div class="catalogo-content">
+
+    <!-- Skeletons mientras carga -->
+    @if (cargando()) {
+      <div class="productos-grid">
+        @for (s of skeletons; track $index) {
+          <div class="producto-card skeleton-card">
+            <p-skeleton height="200px" styleClass="mb-2" />
+            <p-skeleton width="60%" height="1.2rem" styleClass="mb-2" />
+            <p-skeleton width="40%" height="1rem" styleClass="mb-2" />
+            <p-skeleton width="80%" height="1rem" />
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── ESTADO DE ERROR (muestra si falla la carga) ──────── -->
+    @if (!cargando() && errorCatalogo()) {
+      <div class="error-state">
+        <i class="pi pi-wifi error-icon"></i>
+        <h3>No se pudo cargar el catálogo</h3>
+        <p>{{ errorCatalogo() }}</p>
+        <button class="btn-reintentar" (click)="cargarProductos()">
+          <i class="pi pi-refresh"></i> Reintentar
+        </button>
+      </div>
+    }
+
+    <!-- Grid de productos reales -->
+    @if (!cargando() && !errorCatalogo()) {
+
+      @if (productos().length === 0) {
+        <!-- Estado vacío -->
+        <div class="empty-state">
+          <div class="empty-icon">🌾</div>
+          <h3>No hay productos</h3>
+          <p>No encontramos productos con los filtros seleccionados.</p>
+          <button class="btn-limpiar-lg" (click)="limpiarFiltros()">Limpiar filtros</button>
+        </div>
+      } @else {
+
+        <div class="productos-grid">
+          @for (producto of productos(); track producto.id) {
+            <div class="producto-card" (click)="verProducto(producto.id)">
+
+              <!-- Imagen -->
+              <div class="producto-img-wrap">
+                <img
+                  [src]="getFoto(producto)"
+                  [alt]="producto.nombre"
+                  class="producto-img"
+                  loading="lazy"
+                />
+                <!-- Badge de estado -->
+                <p-tag
+                  [value]="producto.estado"
+                  [severity]="getEstadoSeverity(producto.estado)"
+                  styleClass="estado-tag"
+                />
+              </div>
+
+              <!-- Info -->
+              <div class="producto-info">
+                <span class="producto-categoria">{{ producto.categoria_nombre }}</span>
+                <h3 class="producto-nombre">{{ producto.nombre }}</h3>
+
+                <div class="producto-precio">
+                  ${{ producto.precio }}
+                  <span class="producto-unidad">/ {{ producto.unidad_medida }}</span>
+                </div>
+
+                <div class="producto-meta">
+                  <span><i class="pi pi-box"></i> {{ producto.cantidad_disponible }} disponibles</span>
+                  <span><i class="pi pi-map-marker"></i> {{ producto.municipio_nombre }}</span>
+                </div>
+
+                <div class="producto-productor">
+                  <i class="pi pi-user"></i> {{ producto.productor_nombre }}
+                </div>
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <!-- Paginador -->
+        @if (totalProductos() > porPagina) {
+          <div class="paginador-wrap">
+            <p-paginator
+              [rows]="porPagina"
+              [totalRecords]="totalProductos()"
+              (onPageChange)="onPagina($event)"
+              [rowsPerPageOptions]="[]"
+            />
+          </div>
+        }
+
+      }
+    }
+
+  </div>
+</div>

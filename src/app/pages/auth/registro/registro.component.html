@@ -1,0 +1,131 @@
+<p-toast />
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Pantalla de éxito tras registrarse -->
+    @if (exitoso) {
+      <div class="success-box">
+        <div class="success-icon">✅</div>
+        <h2>¡Registro exitoso!</h2>
+        <p>Revisa tu correo electrónico para verificar tu cuenta.</p>
+        <p-button
+          label="Ir al Login"
+          routerLink="/auth/login"
+          styleClass="w-full mt-3"
+        />
+      </div>
+    } @else {
+
+      <!-- Encabezado -->
+      <div class="auth-header">
+        <div class="auth-logo">🌱</div>
+        <h1>AgroConecta</h1>
+        <p>Crea tu cuenta</p>
+      </div>
+
+      <!-- Formulario de registro -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+
+        <!-- Nombre y Apellido en la misma fila -->
+        <div class="form-row">
+          <div class="form-field">
+            <label for="first_name">Nombre</label>
+            <input id="first_name" type="text" pInputText formControlName="first_name" placeholder="Juan" />
+            @if (first_name?.invalid && first_name?.touched) {
+              <small class="error-msg">Campo requerido</small>
+            }
+          </div>
+          <div class="form-field">
+            <label for="last_name">Apellido</label>
+            <input id="last_name" type="text" pInputText formControlName="last_name" placeholder="Pérez" />
+            @if (last_name?.invalid && last_name?.touched) {
+              <small class="error-msg">Campo requerido</small>
+            }
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-field">
+          <label for="email">Correo electrónico</label>
+          <input id="email" type="email" pInputText formControlName="email" placeholder="tucorreo@ejemplo.com" />
+          @if (email?.invalid && email?.touched) {
+            <small class="error-msg">Ingresa un correo válido</small>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <p-password
+            id="password"
+            formControlName="password"
+            placeholder="Mínimo 8 caracteres"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+          @if (password?.invalid && password?.touched) {
+            <small class="error-msg">Mínimo 8 caracteres</small>
+          }
+        </div>
+
+        <!-- Confirmar contraseña -->
+        <div class="form-field">
+          <label for="password2">Confirmar contraseña</label>
+          <p-password
+            id="password2"
+            formControlName="password2"
+            placeholder="Repite tu contraseña"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+          @if (password2?.invalid && password2?.touched) {
+            <small class="error-msg">Campo requerido</small>
+          }
+        </div>
+
+        <!-- Teléfono (opcional) -->
+        <div class="form-field">
+          <label for="telefono">Teléfono <span class="opcional">(opcional)</span></label>
+          <input id="telefono" type="tel" pInputText formControlName="telefono" placeholder="+57 300 000 0000" />
+        </div>
+
+        <!-- Roles -->
+        <div class="form-field">
+          <label>¿Cuál es tu rol?</label>
+          <div class="roles-group">
+            <div class="rol-option">
+              <p-checkbox formControlName="es_productor" [binary]="true" inputId="productor" />
+              <label for="productor">
+                🌾 <strong>Productor</strong> — Vendo productos agrícolas
+              </label>
+            </div>
+            <div class="rol-option">
+              <p-checkbox formControlName="es_comprador" [binary]="true" inputId="comprador" />
+              <label for="comprador">
+                🛒 <strong>Comprador</strong> — Compro productos agrícolas
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón submit -->
+        <p-button
+          type="submit"
+          label="Crear cuenta"
+          [loading]="cargando"
+          styleClass="w-full mt-2"
+        />
+      </form>
+
+      <!-- Link al login -->
+      <p class="auth-footer">
+        ¿Ya tienes cuenta?
+        <a routerLink="/auth/login">Inicia sesión</a>
+      </p>
+    }
+
+  </div>
+</div>

@@ -1,0 +1,116 @@
+/* Mismo fondo que el login */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f4c2a 0%, #1a7a46 50%, #2d9e5f 100%);
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo { font-size: 3rem; margin-bottom: 0.5rem; }
+
+.auth-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f4c2a;
+  margin-bottom: 0.25rem;
+}
+
+.auth-header p { color: #6b7280; font-size: 0.95rem; }
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Fila con dos columnas (nombre y apellido) */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.form-field input { width: 100%; }
+
+.opcional { font-weight: 400; color: #9ca3af; font-size: 0.8rem; }
+
+.error-msg { color: #ef4444; font-size: 0.8rem; }
+
+/* Sección de roles */
+.roles-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.rol-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.rol-option label {
+  cursor: pointer;
+  font-weight: 400;
+  color: #374151;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.auth-footer a { color: #1a7a46; font-weight: 600; text-decoration: none; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* Pantalla de éxito */
+.success-box {
+  text-align: center;
+  padding: 1rem;
+}
+
+.success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+.success-box h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f4c2a;
+  margin-bottom: 0.5rem;
+}
+
+.success-box p { color: #6b7280; margin-bottom: 0.25rem; }

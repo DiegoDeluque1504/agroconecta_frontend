@@ -1,0 +1,146 @@
+<p-toast />
+
+<div class="page">
+  <h1>{{ modoEdicion() ? 'Editar producto' : 'Publicar producto' }}</h1>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-card">
+
+    <div class="form-field">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" pInputText formControlName="nombre" class="w-full" placeholder="Ej: Tomate cherry" />
+    </div>
+
+    <div class="form-field">
+      <label for="descripcion">Descripción</label>
+      <textarea
+        id="descripcion"
+        pTextarea
+        formControlName="descripcion"
+        rows="4"
+        class="w-full"
+        placeholder="Describe tu producto..."
+      ></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label for="precio">Precio (COP)</label>
+        <p-inputNumber
+          id="precio"
+          formControlName="precio"
+          mode="decimal"
+          [minFractionDigits]="0"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        />
+      </div>
+      <div class="form-field">
+        <label for="cantidad">Cantidad disponible</label>
+        <p-inputNumber
+          id="cantidad"
+          formControlName="cantidad_disponible"
+          mode="decimal"
+          [minFractionDigits]="0"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Unidad de medida</label>
+        <p-select
+          formControlName="unidad_medida"
+          [options]="unidades"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+        />
+      </div>
+      <div class="form-field">
+        <label>Categoría</label>
+        <p-select
+          formControlName="categoria_id"
+          [options]="categorias()"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Selecciona"
+          styleClass="w-full"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Municipio</label>
+        <p-select
+          formControlName="municipio_id"
+          [options]="municipios()"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Selecciona"
+          styleClass="w-full"
+        />
+      </div>
+      @if (modoEdicion()) {
+        <div class="form-field">
+          <label>Estado</label>
+          <p-select
+            formControlName="estado"
+            [options]="estados"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+          />
+        </div>
+      }
+    </div>
+
+    @if (!modoEdicion()) {
+      <div class="form-field">
+        <label>Foto del producto</label>
+        <div class="file-upload-area" (click)="fotoInput.click()">
+          <input
+            #fotoInput
+            id="foto"
+            type="file"
+            accept="image/*"
+            (change)="onFoto($event)"
+          />
+          <label class="file-upload-label" for="foto">
+            <i class="pi pi-image"></i>
+            @if (fotoSeleccionada) {
+              <strong>{{ fotoSeleccionada.name }}</strong>
+              <small>Clic para cambiar</small>
+            } @else {
+              <strong>Haz clic para adjuntar una foto</strong>
+              <small>JPG, PNG, WEBP — Opcional pero recomendada</small>
+            }
+          </label>
+        </div>
+        @if (fotoPreviewUrl) {
+          <div class="foto-preview">
+            <img [src]="fotoPreviewUrl" alt="Vista previa de la foto" />
+          </div>
+        }
+      </div>
+    }
+
+    <div class="acciones">
+      <p-button
+        type="button"
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        routerLink="/mis-productos"
+      />
+      <p-button
+        type="submit"
+        [label]="modoEdicion() ? 'Guardar cambios' : 'Publicar'"
+        icon="pi pi-check"
+        [loading]="cargando()"
+      />
+    </div>
+  </form>
+</div>

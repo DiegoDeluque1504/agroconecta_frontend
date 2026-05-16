@@ -1,0 +1,77 @@
+<p-toast />
+
+<div class="notif-page">
+
+  <div class="notif-header">
+    <div>
+      <h1><i class="pi pi-bell"></i> Notificaciones</h1>
+      <p>{{ notificaciones().length }} notificación{{ notificaciones().length !== 1 ? 'es' : '' }}</p>
+    </div>
+    @if (hayNoLeidas) {
+      <p-button
+        label="Marcar todas como leídas"
+        icon="pi pi-check-circle"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        [loading]="marcandoTodas()"
+        (onClick)="marcarTodasLeidas()"
+      />
+    }
+  </div>
+
+  @if (cargando()) {
+    <div class="notif-lista">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="notif-skeleton">
+          <p-skeleton shape="circle" size="42px" />
+          <div class="skeleton-lines">
+            <p-skeleton width="50%" height="1rem" />
+            <p-skeleton width="80%" height="0.85rem" />
+            <p-skeleton width="30%" height="0.75rem" />
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (notificaciones().length === 0) {
+    <div class="notif-vacia">
+      <i class="pi pi-bell-slash"></i>
+      <h3>Sin notificaciones</h3>
+      <p>Cuando haya actividad en tus negociaciones o pedidos, aparecerá aquí.</p>
+    </div>
+  } @else {
+    <ul class="notif-lista">
+      @for (n of notificaciones(); track n.id) {
+        <li
+          class="notif-item"
+          [class.no-leida]="!n.leida"
+          (click)="marcarLeida(n)"
+          [attr.role]="n.url_destino ? 'link' : 'listitem'"
+          [style.cursor]="n.url_destino || !n.leida ? 'pointer' : 'default'"
+        >
+          <!-- Ícono del tipo -->
+          <div class="notif-icono" [class.icono-activo]="!n.leida">
+            <i class="pi {{ iconoTipo(n.tipo) }}"></i>
+          </div>
+
+          <!-- Contenido -->
+          <div class="notif-contenido">
+            <div class="notif-top">
+              <strong class="notif-titulo">{{ n.titulo }}</strong>
+              @if (!n.leida) {
+                <span class="badge-nueva">Nueva</span>
+              }
+            </div>
+            <p class="notif-mensaje">{{ n.mensaje }}</p>
+            <small class="notif-fecha">{{ formatFecha(n.created_at) }}</small>
+          </div>
+
+          <!-- Indicador de no leída -->
+          @if (!n.leida) {
+            <span class="punto-no-leida"></span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

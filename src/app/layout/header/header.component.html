@@ -1,0 +1,107 @@
+<header class="header">
+  <div class="header-inner">
+
+    <a routerLink="/catalogo" class="logo" (click)="cerrarMenus()">
+      <span class="logo-icon">🌱</span>
+      <span class="logo-text">AgroConecta</span>
+    </a>
+
+    <nav class="nav-desktop">
+      <a routerLink="/catalogo" routerLinkActive="nav-active" class="nav-link">
+        <i class="pi pi-shopping-bag"></i> Catálogo
+      </a>
+      <a routerLink="/negociaciones" routerLinkActive="nav-active" class="nav-link">
+        <i class="pi pi-comments"></i> Negociaciones
+      </a>
+      <a routerLink="/pedidos" routerLinkActive="nav-active" class="nav-link">
+        <i class="pi pi-truck"></i> Pedidos
+      </a>
+    </nav>
+
+    <div class="header-actions">
+
+      <a routerLink="/notificaciones" class="icon-btn notif-btn" title="Notificaciones">
+        <i class="pi pi-bell"></i>
+        @if (notifService.noLeidas() > 0) {
+          <span class="notif-badge">{{ notifService.noLeidas() > 99 ? '99+' : notifService.noLeidas() }}</span>
+        }
+      </a>
+
+
+
+      <!-- Menú de perfil (dropdown propio, sin depender de PrimeNG overlay) -->
+      <div class="user-menu" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="avatar-btn"
+          (click)="toggleMenuPerfil($event)"
+          [attr.aria-expanded]="menuPerfilAbierto()"
+          aria-haspopup="true"
+        >
+          <p-avatar [label]="iniciales" styleClass="avatar" shape="circle" />
+        </button>
+
+        @if (menuPerfilAbierto()) {
+          <div class="user-dropdown">
+            <div class="dropdown-header">
+              <strong>{{ nombreUsuario }}</strong>
+              <small>{{ auth.usuario()?.email }}</small>
+            </div>
+            <button type="button" class="dropdown-item" (click)="irA('/perfil')">
+              <i class="pi pi-user"></i> Mi perfil
+            </button>
+            @if (auth.esProductor()) {
+              <button type="button" class="dropdown-item" (click)="irA('/mis-productos')">
+                <i class="pi pi-box"></i> Mis productos
+              </button>
+              <button type="button" class="dropdown-item" (click)="irA('/publicar')">
+                <i class="pi pi-plus"></i> Publicar producto
+              </button>
+            }
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item logout" (click)="cerrarSesion()">
+              <i class="pi pi-sign-out"></i> Cerrar sesión
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <button class="hamburger-btn" (click)="toggleMenuMovil()">
+      <i class="pi" [class.pi-bars]="!menuMovilAbierto()" [class.pi-times]="menuMovilAbierto()"></i>
+    </button>
+
+  </div>
+
+  @if (menuMovilAbierto()) {
+    <nav class="nav-mobile">
+      <a routerLink="/catalogo" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+        <i class="pi pi-shopping-bag"></i> Catálogo
+      </a>
+      <a routerLink="/negociaciones" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+        <i class="pi pi-comments"></i> Negociaciones
+      </a>
+      <a routerLink="/pedidos" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+        <i class="pi pi-truck"></i> Pedidos
+      </a>
+      <a routerLink="/notificaciones" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+        <i class="pi pi-bell"></i> Notificaciones
+      </a>
+      <a routerLink="/perfil" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+        <i class="pi pi-user"></i> Perfil
+      </a>
+      @if (auth.esProductor()) {
+        <a routerLink="/mis-productos" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+          <i class="pi pi-box"></i> Mis productos
+        </a>
+        <a routerLink="/publicar" routerLinkActive="nav-active" class="nav-link-mobile" (click)="cerrarMenus()">
+          <i class="pi pi-plus"></i> Publicar
+        </a>
+      }
+      <button type="button" class="logout-mobile" (click)="cerrarSesion()">
+        <i class="pi pi-sign-out"></i> Cerrar sesión
+      </button>
+    </nav>
+  }
+</header>
