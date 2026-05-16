@@ -168,8 +168,8 @@ export class PerfilComponent implements OnInit, OnDestroy {
     // Clic en el mapa → mueve el marcador y actualiza las coordenadas
     this.mapa.on('click', (e: any) => {
       const { lat, lng } = e.latlng;
-      this.latitudSel.set(lat);
-      this.longitudSel.set(lng);
+      this.latitudSel.set(parseFloat(lat.toFixed(6)));
+      this.longitudSel.set(parseFloat(lng.toFixed(6)));
 
       if (this.marcador) {
         this.marcador.setLatLng([lat, lng]);
@@ -186,8 +186,18 @@ export class PerfilComponent implements OnInit, OnDestroy {
     const lng = this.longitudSel();
     if (!lat || !lng) return;
 
+    const v = this.formPerfil.value;
     this.guardandoUbic.set(true);
-    this.perfilService.actualizarPerfil({ latitud: lat, longitud: lng }).subscribe({
+
+    // PUT requiere todos los campos — combinamos perfil + coordenadas
+    this.perfilService.actualizarPerfil({
+      first_name: v.first_name,
+      last_name:  v.last_name,
+      telefono:   v.telefono || null,
+      municipio:  v.municipio ?? null,
+      latitud:    parseFloat(lat.toFixed(6)),
+      longitud:   parseFloat(lng.toFixed(6)),
+    }).subscribe({
       next: (u) => {
         this.auth.actualizarUsuario(u);
         this.guardandoUbic.set(false);

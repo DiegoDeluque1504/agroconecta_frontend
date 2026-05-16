@@ -110,7 +110,13 @@
             </div>
           </div>
         </div>
-
+        <!-- Ubicación del productor (solo si tiene coordenadas y no es el dueño) -->
+        @if (!esElProductor() && producto()?.productor?.latitud && producto()?.productor?.longitud) {
+          <div class="ubicacion-card">
+            <h3><i class="pi pi-map-marker"></i> Ubicación del productor</h3>
+            <div #mapaProductor class="mapa-productor"></div>
+          </div>
+        }
         <!-- Botón de negociación -->
         @if (esElProductor()) {
           <p-button

@@ -245,3 +245,26 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mapa del productor */
+.ubicacion-card {
+  margin-top: 1rem;
+}
+.ubicacion-card h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.ubicacion-card h3 i { color: #1a7a46; }
+.mapa-productor {
+  width: 100%;
+  height: 220px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  z-index: 0;
+}

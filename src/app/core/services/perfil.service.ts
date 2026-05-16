@@ -27,7 +27,7 @@ export class PerfilService {
 
   // PATCH /usuarios/perfil/ — actualiza solo los campos enviados
   actualizarPerfil(datos: ActualizarPerfil): Observable<Usuario> {
-    return this.http.patch<Usuario>(`${API}/usuarios/perfil/`, datos);
+    return this.http.put<Usuario>(`${API}/usuarios/perfil/`, datos);
   }
 
   // POST /usuarios/cambiar-password/ — cambia la contraseña (endpoint pendiente en backend)
