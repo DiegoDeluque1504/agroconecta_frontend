@@ -3,18 +3,48 @@
 <div class="auth-wrapper">
   <div class="auth-card">
 
-    <!-- Pantalla de éxito tras registrarse -->
+    <!-- Pantalla de verificación de email (aparece tras registrarse) -->
     @if (exitoso) {
       <div class="success-box">
-        <div class="success-icon">✅</div>
-        <h2>¡Registro exitoso!</h2>
-        <p>Revisa tu correo electrónico para verificar tu cuenta.</p>
+        <div class="success-icon">✉️</div>
+        <h2>Verifica tu correo</h2>
+        <p>
+          Enviamos un código de verificación a<br>
+          <strong>{{ emailRegistrado }}</strong>
+        </p>
+        <p class="verify-hint">Revisa tu bandeja de entrada (y la carpeta de spam).</p>
+
+        <!-- Campo del token -->
+        <div class="form-field verify-field">
+          <label for="token">Código de verificación</label>
+          <input
+            id="token"
+            type="text"
+            pInputText
+            [(ngModel)]="tokenInput"
+            placeholder="Pega aquí el código recibido"
+            class="w-full"
+            (keydown.enter)="verificar()"
+          />
+        </div>
+
+        <!-- Botón verificar -->
         <p-button
-          label="Ir al Login"
-          routerLink="/auth/login"
-          styleClass="w-full mt-3"
+          label="Verificar cuenta"
+          icon="pi pi-check-circle"
+          [loading]="verificando"
+          [disabled]="!tokenInput.trim()"
+          (onClick)="verificar()"
+          styleClass="w-full mt-2"
         />
+
+        <!-- Enlace al login por si ya verificó antes -->
+        <p class="auth-footer mt-3">
+          ¿Ya verificaste tu cuenta?
+          <a routerLink="/auth/login">Inicia sesión</a>
+        </p>
       </div>
+
     } @else {
 
       <!-- Encabezado -->

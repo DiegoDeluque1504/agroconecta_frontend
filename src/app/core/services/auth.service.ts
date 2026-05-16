@@ -53,6 +53,11 @@ export class AuthService {
     return this.http.post<RespuestaRegistro>(`${API}/usuarios/registro/`, datos);
   }
 
+  // Verifica el email con el token enviado al correo del usuario
+  verificarEmail(token: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${API}/usuarios/verificar-email/`, { token });
+  }
+
   // Cierra sesión: limpia localStorage y redirige al login
   logout(): void {
     localStorage.clear();
