@@ -111,3 +111,35 @@
   .form-row    { grid-template-columns: 1fr; }
   .perfil-header { flex-direction: column; text-align: center; }
 }
+
+/* Mapa de ubicación */
+.card-mapa {
+  grid-column: 1 / -1;
+}
+.mapa-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+.coordenadas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 2rem;
+  margin-bottom: 0.75rem;
+}
+.mapa-container {
+  width: 100%;
+  height: 380px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  z-index: 0;
+}
+.mt-2 { margin-top: 0.75rem; }

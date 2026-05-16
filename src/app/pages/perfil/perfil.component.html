@@ -2,7 +2,6 @@
 
 <div class="perfil-page">
 
-  <!-- ── Skeleton de carga inicial ─────────────────── -->
   @if (cargandoPerfil()) {
     <div class="perfil-skeleton">
       <div class="perfil-header">
@@ -30,131 +29,129 @@
     </div>
   }
 
-  <!-- ── Contenido real (cuando carga) ────────────── -->
   @if (!cargandoPerfil()) {
 
-  <!-- Tarjeta de cabecera con avatar -->
-  <div class="perfil-header">
-    <p-avatar [label]="iniciales" size="xlarge" shape="circle" styleClass="avatar-grande" />
-    <div class="perfil-header-info">
-      <h1>{{ nombreCompleto }}</h1>
-      <p>{{ auth.usuario()?.email }}</p>
-      <div class="roles">
-        @if (auth.esProductor()) {
-          <p-tag value="Productor" severity="success" icon="pi pi-leaf" />
-        }
-        @if (auth.usuario()?.es_comprador) {
-          <p-tag value="Comprador" severity="info" icon="pi pi-shopping-cart" />
-        }
+    <div class="perfil-header">
+      <p-avatar [label]="iniciales" size="xlarge" shape="circle" styleClass="avatar-grande" />
+      <div class="perfil-header-info">
+        <h1>{{ nombreCompleto }}</h1>
+        <p>{{ auth.usuario()?.email }}</p>
+        <div class="roles">
+          @if (auth.esProductor()) {
+            <p-tag value="Productor" severity="success" icon="pi pi-leaf" />
+          }
+          @if (auth.usuario()?.es_comprador) {
+            <p-tag value="Comprador" severity="info" icon="pi pi-shopping-cart" />
+          }
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="perfil-grid">
+    <div class="perfil-grid">
 
-    <!-- Formulario datos personales -->
-    <div class="card">
-      <h2><i class="pi pi-user"></i> Datos personales</h2>
-      <p-divider />
-
-      <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()" class="form-fields">
-
-        <div class="form-row">
+      <!-- Datos personales -->
+      <div class="card">
+        <h2><i class="pi pi-user"></i> Datos personales</h2>
+        <p-divider />
+        <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()" class="form-fields">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="first_name">Nombre</label>
+              <input id="first_name" pInputText formControlName="first_name" class="w-full" />
+              @if (formPerfil.get('first_name')?.invalid && formPerfil.get('first_name')?.touched) {
+                <small class="error">El nombre es requerido</small>
+              }
+            </div>
+            <div class="form-field">
+              <label for="last_name">Apellido</label>
+              <input id="last_name" pInputText formControlName="last_name" class="w-full" />
+              @if (formPerfil.get('last_name')?.invalid && formPerfil.get('last_name')?.touched) {
+                <small class="error">El apellido es requerido</small>
+              }
+            </div>
+          </div>
           <div class="form-field">
-            <label for="first_name">Nombre</label>
-            <input id="first_name" pInputText formControlName="first_name" class="w-full" />
-            @if (formPerfil.get('first_name')?.invalid && formPerfil.get('first_name')?.touched) {
-              <small class="error">El nombre es requerido</small>
+            <label for="telefono">Teléfono</label>
+            <input id="telefono" pInputText formControlName="telefono" class="w-full" placeholder="Ej: 3001234567" />
+          </div>
+          <div class="form-field">
+            <label>Municipio</label>
+            <p-select
+              formControlName="municipio"
+              [options]="municipios()"
+              optionLabel="nombre"
+              optionValue="id"
+              placeholder="Selecciona tu municipio"
+              styleClass="w-full"
+            />
+          </div>
+          <div class="form-actions">
+            <p-button type="submit" label="Guardar cambios" icon="pi pi-check" [loading]="guardando()" />
+          </div>
+        </form>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="card">
+        <h2><i class="pi pi-lock"></i> Cambiar contraseña</h2>
+        <p-divider />
+        <form [formGroup]="formPass" (ngSubmit)="cambiarPassword()" class="form-fields">
+          <div class="form-field">
+            <label for="actual">Contraseña actual</label>
+            <p-password id="actual" formControlName="actual" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+            @if (formPass.get('actual')?.invalid && formPass.get('actual')?.touched) {
+              <small class="error">Ingresa tu contraseña actual</small>
             }
           </div>
           <div class="form-field">
-            <label for="last_name">Apellido</label>
-            <input id="last_name" pInputText formControlName="last_name" class="w-full" />
-            @if (formPerfil.get('last_name')?.invalid && formPerfil.get('last_name')?.touched) {
-              <small class="error">El apellido es requerido</small>
+            <label for="nueva">Nueva contraseña</label>
+            <p-password id="nueva" formControlName="nueva" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+            @if (formPass.get('nueva')?.errors?.['minlength'] && formPass.get('nueva')?.touched) {
+              <small class="error">Mínimo 8 caracteres</small>
+            }
+            @if (formPass.get('nueva')?.errors?.['required'] && formPass.get('nueva')?.touched) {
+              <small class="error">La nueva contraseña es requerida</small>
             }
           </div>
-        </div>
+          <div class="form-actions">
+            <p-button type="submit" label="Cambiar contraseña" icon="pi pi-key" severity="secondary" [loading]="cambiandoPass()" />
+          </div>
+        </form>
+      </div>
 
-        <div class="form-field">
-          <label for="telefono">Teléfono</label>
-          <input id="telefono" pInputText formControlName="telefono" class="w-full" placeholder="Ej: 3001234567" />
-        </div>
-
-        <div class="form-field">
-          <label>Municipio</label>
-          <p-select
-            formControlName="municipio"
-            [options]="municipios()"
-            optionLabel="nombre"
-            optionValue="id"
-            placeholder="Selecciona tu municipio"
-            styleClass="w-full"
-          />
-        </div>
-
-        <div class="form-actions">
-          <p-button
-            type="submit"
-            label="Guardar cambios"
-            icon="pi pi-check"
-            [loading]="guardando()"
-          />
-        </div>
-      </form>
     </div>
 
-    <!-- Formulario cambio de contraseña -->
-    <div class="card">
-      <h2><i class="pi pi-lock"></i> Cambiar contraseña</h2>
-      <p-divider />
+    <!-- Mapa de ubicación (solo productores) -->
+    @if (auth.esProductor()) {
+      <div class="card card-mapa">
+        <h2><i class="pi pi-map-marker"></i> Mi ubicación</h2>
+        <p-divider />
+        <p class="mapa-hint">
+          Haz clic en el mapa para marcar tu ubicación. Los compradores podrán verla en tus productos.
+        </p>
 
-      <form [formGroup]="formPass" (ngSubmit)="cambiarPassword()" class="form-fields">
+        <!-- Coordenadas seleccionadas -->
+        @if (latitudSel() && longitudSel()) {
+          <div class="coordenadas">
+            <i class="pi pi-map-marker"></i>
+            <span>{{ latitudSel()!.toFixed(5) }}, {{ longitudSel()!.toFixed(5) }}</span>
+          </div>
+        }
 
-        <div class="form-field">
-          <label for="actual">Contraseña actual</label>
-          <p-password
-            id="actual"
-            formControlName="actual"
-            [feedback]="false"
-            [toggleMask]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-          />
-          @if (formPass.get('actual')?.invalid && formPass.get('actual')?.touched) {
-            <small class="error">Ingresa tu contraseña actual</small>
-          }
-        </div>
+        <!-- Contenedor del mapa -->
+        <div #mapaContainer class="mapa-container"></div>
 
-        <div class="form-field">
-          <label for="nueva">Nueva contraseña</label>
-          <p-password
-            id="nueva"
-            formControlName="nueva"
-            [toggleMask]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-          />
-          @if (formPass.get('nueva')?.errors?.['minlength'] && formPass.get('nueva')?.touched) {
-            <small class="error">Mínimo 8 caracteres</small>
-          }
-          @if (formPass.get('nueva')?.errors?.['required'] && formPass.get('nueva')?.touched) {
-            <small class="error">La nueva contraseña es requerida</small>
-          }
-        </div>
-
-        <div class="form-actions">
+        <div class="form-actions mt-2">
           <p-button
-            type="submit"
-            label="Cambiar contraseña"
-            icon="pi pi-key"
-            severity="secondary"
-            [loading]="cambiandoPass()"
+            label="Guardar ubicación"
+            icon="pi pi-save"
+            [loading]="guardandoUbic()"
+            [disabled]="!latitudSel() || !longitudSel()"
+            (onClick)="guardarUbicacion()"
           />
         </div>
-      </form>
-    </div>
+      </div>
+    }
 
-  </div>
   } <!-- fin @if (!cargandoPerfil()) -->
 </div>

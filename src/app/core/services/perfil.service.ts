@@ -12,6 +12,8 @@ export interface ActualizarPerfil {
   last_name?: string;
   telefono?: string | null;
   municipio?: number | null;
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
