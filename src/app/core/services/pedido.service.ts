@@ -45,7 +45,18 @@ export class PedidoService {
   }
 
   // POST /pedidos/crear/{negociacion_id}/ — crea un pedido a partir de una negociación cerrada
-  crearDesdeNegociacion(negociacionId: number): Observable<PedidoDetalle> {
-    return this.http.post<PedidoDetalle>(`${API}/pedidos/crear/${negociacionId}/`, {});
+  crearDesdeNegociacion(
+    negociacionId: number,
+    cantidadAcordada: number,
+    precioAcordado: number,
+    direccionEntrega: string = '',
+    notasEntrega: string = ''
+  ): Observable<PedidoDetalle> {
+    return this.http.post<PedidoDetalle>(`${API}/pedidos/crear/${negociacionId}/`, {
+      cantidad_acordada: cantidadAcordada,
+      precio_acordado: precioAcordado,
+      direccion_entrega: direccionEntrega,
+      notas_entrega: notasEntrega,
+    });
   }
 }

@@ -233,3 +233,35 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
+
+/* Diálogo de crear pedido */
+.dialogo-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.dialogo-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.form-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+.opcional {
+  font-weight: 400;
+  color: #9ca3af;
+}
+.dialogo-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

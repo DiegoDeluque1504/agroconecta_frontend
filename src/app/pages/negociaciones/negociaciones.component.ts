@@ -9,6 +9,8 @@ import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 import { NegociacionService } from '../../core/services/negociacion.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -26,6 +28,8 @@ import { NegociacionLista, NegociacionDetalle, Mensaje } from '../../core/models
     TagModule,
     SkeletonModule,
     ToastModule,
+    DialogModule,
+    InputNumberModule,
   ],
   providers: [MessageService],
   templateUrl: './negociaciones.component.html',
@@ -46,6 +50,12 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
   cargandoChat        = signal(false);
   enviando            = signal(false);
   creandoPedido       = signal(false);
+  // Diálogo de crear pedido
+  mostrarDialogoPedido = signal(false);
+  cantidadAcordada: number | null = null;
+  precioAcordado: number | null = null;
+  direccionEntrega = '';
+  notasEntrega = '';
   negociacionActivaId = signal<number | null>(null);
   nuevoMensaje        = '';
 
@@ -249,19 +259,40 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
     });
   }
 
+abrirDialogoPedido(): void {
+  const p = this.detalle()?.producto_nombre;
+  if (!p) return;
+  this.cantidadAcordada = null;
+  this.precioAcordado = null;
+  this.direccionEntrega = '';
+  this.notasEntrega = '';
+  this.mostrarDialogoPedido.set(true);
+}
+
   crearPedido(): void {
     const id = this.negociacionActivaId();
-    if (!id) return;
+    if (!id || !this.cantidadAcordada || !this.precioAcordado) {
+      this.toast.add({ severity: 'warn', summary: 'Atención', detail: 'Ingresa cantidad y precio acordado' });
+      return;
+    }
+
     this.creandoPedido.set(true);
-    this.pedidoService.crearDesdeNegociacion(id).subscribe({
+    this.pedidoService.crearDesdeNegociacion(
+      id,
+      this.cantidadAcordada,
+      this.precioAcordado,
+      this.direccionEntrega,
+      this.notasEntrega
+    ).subscribe({
       next: (pedido) => {
         this.creandoPedido.set(false);
+        this.mostrarDialogoPedido.set(false);
         this.cargarDetalle(id);
         this.toast.add({ severity: 'success', summary: '¡Pedido creado!', detail: `Pedido #${pedido.id} generado correctamente` });
       },
-      error: (err) => {
+      error: (err: { error?: Record<string, unknown> }) => {
         this.creandoPedido.set(false);
-        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?._mensaje ?? 'No se pudo crear el pedido' });
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?.['_mensaje'] as string ?? 'No se pudo crear el pedido' });
       },
     });
   }

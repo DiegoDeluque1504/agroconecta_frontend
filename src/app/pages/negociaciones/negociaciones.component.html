@@ -76,6 +76,7 @@
     }
 
     @if (!cargandoChat() && detalle(); as d) {
+
       <!-- Cabecera -->
       <div class="chat-header">
         <div>
@@ -86,11 +87,23 @@
           <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
           @if (d.estado === 'abierta') {
             @if (soyProductorEnChat()) {
-              <p-button label="Cerrar" icon="pi pi-check" severity="secondary" size="small" (onClick)="cambiarEstado('cerrada')" />
+              <p-button
+                label="Cerrar"
+                icon="pi pi-check"
+                severity="secondary"
+                size="small"
+                (onClick)="cambiarEstado('cerrada')"
+              />
             }
-            <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [outlined]="true" (onClick)="cambiarEstado('cancelada')" />
+            <p-button
+              label="Cancelar"
+              icon="pi pi-times"
+              severity="danger"
+              size="small"
+              [outlined]="true"
+              (onClick)="cambiarEstado('cancelada')"
+            />
           }
-          <!-- Botón Crear Pedido: solo para el productor cuando la negociación está cerrada -->
           @if (d.estado === 'cerrada' && soyProductorEnChat()) {
             <p-button
               label="Crear Pedido"
@@ -98,7 +111,7 @@
               severity="success"
               size="small"
               [loading]="creandoPedido()"
-              (onClick)="crearPedido()"
+              (onClick)="abrirDialogoPedido()"
             />
           }
         </div>
@@ -183,6 +196,85 @@
           <i class="pi pi-lock"></i> Esta negociación está {{ d.estado }} y no acepta más mensajes.
         </div>
       }
+
     }
   </section>
 </div>
+
+<!-- Diálogo para crear pedido (fuera del @if para evitar problemas de visibilidad) -->
+<p-dialog
+  header="Crear pedido"
+  [visible]="mostrarDialogoPedido()"
+  (visibleChange)="mostrarDialogoPedido.set($event)"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false"
+>
+  <div class="dialogo-pedido">
+    <p class="dialogo-hint">
+      Ingresa los términos finales acordados en el chat.
+    </p>
+
+    <div class="form-field">
+      <label>Cantidad acordada</label>
+      <p-inputNumber
+        [(ngModel)]="cantidadAcordada"
+        mode="decimal"
+        [minFractionDigits]="0"
+        [min]="0.01"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        placeholder="Ej: 50"
+      />
+    </div>
+
+    <div class="form-field">
+      <label>Precio acordado (COP)</label>
+      <p-inputNumber
+        [(ngModel)]="precioAcordado"
+        mode="decimal"
+        [minFractionDigits]="0"
+        [min]="1"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        placeholder="Ej: 3000"
+      />
+    </div>
+
+    <div class="form-field">
+      <label>Dirección de entrega <span class="opcional">(opcional)</span></label>
+      <input
+        pInputText
+        [(ngModel)]="direccionEntrega"
+        class="w-full"
+        placeholder="Ej: Calle 10 # 5-20, Riohacha"
+      />
+    </div>
+
+    <div class="form-field">
+      <label>Notas de entrega <span class="opcional">(opcional)</span></label>
+      <input
+        pInputText
+        [(ngModel)]="notasEntrega"
+        class="w-full"
+        placeholder="Ej: Entregar en la mañana"
+      />
+    </div>
+
+    <div class="dialogo-acciones">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="mostrarDialogoPedido.set(false)"
+      />
+      <p-button
+        label="Confirmar pedido"
+        icon="pi pi-check"
+        severity="success"
+        [loading]="creandoPedido()"
+        (onClick)="crearPedido()"
+      />
+    </div>
+  </div>
+</p-dialog>
