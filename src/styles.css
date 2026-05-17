@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* ── Variables de color ────────────────────────────────── */
+:root {
+  --color-primary: #057C3E;
+  --color-primary-dark: #045c2e;
+  --color-accent: #E0D205;
+  --color-accent-dark: #b8ac04;
+  --color-bg: #E9F9A7;
+  --color-bg-card: #ffffff;
+  --color-text: #1a1a1a;
+  --color-text-soft: #4a4a4a;
+  --color-text-muted: #6b7280;
+}
+
 /* ── Tipografía global ─────────────────────────────────── */
 * {
   font-family: 'Inter', sans-serif;
@@ -7,4 +20,10 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Fondo general ─────────────────────────────────────── */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }

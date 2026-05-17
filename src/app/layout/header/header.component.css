@@ -27,7 +27,12 @@
   text-decoration: none;
 }
 
-.logo-icon { font-size: 1.5rem; }
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+}
 
 .logo-text {
   font-size: 1.25rem;
