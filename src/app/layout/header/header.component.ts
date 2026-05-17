@@ -22,7 +22,9 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     // Carga el conteo de notificaciones no leídas al iniciar
-    this.notifService.getConteo().subscribe();
+    if (this.auth.estaAutenticado()) {
+      this.notifService.getConteo().subscribe();
+    }
   }
 
   get iniciales(): string {

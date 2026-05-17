@@ -234,3 +234,37 @@
   .nav-desktop, .header-actions { display: none; }
   .hamburger-btn { display: flex; }
 }
+
+/* Botones para usuarios no autenticados */
+.btn-login {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a7a46;
+  border: 1.5px solid #1a7a46;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-login:hover {
+  background: #f0fdf4;
+}
+.btn-registro {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: #1a7a46;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-registro:hover {
+  background: #15633a;
+}

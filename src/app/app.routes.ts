@@ -2,8 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard, producerGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-
-  // ─── RUTAS PÚBLICAS ───────────────────────────────────────────────
+  // ─── RUTAS DE AUTENTICACIÓN (solo sin sesión) ─────────────────────
   {
     path: 'auth',
     canActivate: [guestGuard],
@@ -22,11 +21,9 @@ export const routes: Routes = [
     ],
   },
 
-  // ─── RUTAS PRIVADAS (envueltas en el layout con header) ───────────
+  // ─── RUTAS PÚBLICAS (con header, sin requerir login) ──────────────
   {
     path: '',
-    canActivate: [authGuard],
-    // El layout principal actúa como "envoltorio" con header
     loadComponent: () =>
       import('./layout/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     children: [
@@ -43,9 +40,19 @@ export const routes: Routes = [
             (m) => m.ProductoDetalleComponent
           ),
       },
+    ],
+  },
+
+  // ─── RUTAS PRIVADAS (con header, requieren login) ─────────────────
+  {
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
+    children: [
       {
         path: 'mis-productos',
-        canActivate: [producerGuard], // Solo productores
+        canActivate: [producerGuard],
         loadComponent: () =>
           import('./pages/mis-productos/mis-productos.component').then(
             (m) => m.MisProductosComponent
@@ -53,7 +60,7 @@ export const routes: Routes = [
       },
       {
         path: 'publicar',
-        canActivate: [producerGuard], // Solo productores
+        canActivate: [producerGuard],
         loadComponent: () =>
           import('./pages/publicar-producto/publicar-producto.component').then(
             (m) => m.PublicarProductoComponent

@@ -2,6 +2,11 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+
+// Guard para rutas SEMI-PÚBLICAS: deja pasar siempre, pero el componente
+// puede saber si hay sesión activa leyendo auth.estaAutenticado()
+export const optionalAuthGuard: CanActivateFn = () => true;
+
 // Guard para rutas PRIVADAS: solo deja pasar si el usuario está autenticado
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
