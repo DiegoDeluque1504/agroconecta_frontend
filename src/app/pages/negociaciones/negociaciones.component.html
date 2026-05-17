@@ -104,7 +104,7 @@
               (onClick)="cambiarEstado('cancelada')"
             />
           }
-          @if (d.estado === 'cerrada' && soyProductorEnChat()) {
+          @if (d.estado === 'abierta' && soyProductorEnChat()) {
             <p-button
               label="Crear Pedido"
               icon="pi pi-shopping-bag"
