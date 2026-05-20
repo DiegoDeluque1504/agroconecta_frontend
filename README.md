@@ -69,14 +69,14 @@ export const environment = {
 // src/environments/environment.prod.ts (producción)
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8000/api/v1', // ← cambiar por URL real del backend
+  apiUrl: 'https://agroconecta-backend-sjmy.onrender.com/api/v1',
 };
 ```
 
-Todos los servicios usan `environment.apiUrl`. En build de producción, Angular sustituye automáticamente el archivo.
+Todos los servicios usan `environment.apiUrl`. En build de producción, `angular.json` debe incluir `fileReplacements` para sustituir `environment.ts` por `environment.prod.ts`.
 
 ```bash
-npm run build   # usa environment.prod.ts
+npm run build   # ng build --configuration production
 ```
 
 ---
@@ -94,7 +94,7 @@ src/app/
 │   └── models/index.ts
 ├── layout/                            # header, main-layout
 └── pages/
-    ├── auth/login, auth/registro
+    ├── auth/login, auth/registro, auth/verificar-email
     ├── catalogo, producto-detalle
     ├── publicar-producto, mis-productos
     ├── negociaciones, pedidos, perfil, notificaciones
@@ -107,7 +107,9 @@ src/app/
 | Ruta | Acceso | Descripción |
 |---|---|---|
 | `/auth/login` | Invitado | Login con detección de bloqueo Axes |
-| `/auth/registro` | Invitado | Registro + verificación de email en pantalla |
+| `/auth/registro` | Invitado | Registro + verificación (token manual o correo) |
+| `/auth/verificar-email` | Invitado | Activación por enlace `?token=` del correo |
+| `/verificar-email` | Invitado | Redirige a `/auth/verificar-email` (compatibilidad) |
 | `/catalogo` | Autenticado | Catálogo con búsqueda, filtros y paginación |
 | `/producto/:id` | Autenticado | Detalle; botón negociar (no para el dueño) |
 | `/publicar` | Productor | Crear/editar producto + galería de fotos |
@@ -221,9 +223,11 @@ Tras **100 peticiones/día** sin autenticarse, el backend responde `guest_explor
 ### Comprador
 
 ```
-Registro → Verificar email → Login → Catálogo → Detalle → Iniciar negociación
-→ Chat → (productor crea pedido) → Pedidos → Calificar
+Registro → Verificar email (enlace del correo o token en pantalla) → Catálogo
+→ Detalle → Iniciar negociación → Chat → (productor crea pedido) → Pedidos → Calificar
 ```
+
+Tras verificar por enlace o token, el frontend guarda el JWT y entra al catálogo sin pasar por login.
 
 ### Productor
 
@@ -273,11 +277,53 @@ npx ng version
 
 ---
 
-## Producción (checklist)
+## Producción
 
-- [ ] Actualizar `apiUrl` en `environment.prod.ts`
-- [ ] Backend en HTTPS con CORS apuntando al dominio del frontend
-- [ ] Probar flujo E2E: registro → verificar → login → pedido completo
+### URLs desplegadas
+
+| Recurso | URL |
+|---------|-----|
+| **App** | https://agroconecta-frontend-sigma.vercel.app |
+| **API** | https://agroconecta-backend-sjmy.onrender.com/api/v1 |
+
+### Vercel
+
+| Configuración | Valor |
+|---------------|--------|
+| Framework | Angular |
+| Build command | `ng build --configuration production` |
+| Output directory | `dist/agroconecta_frontend/browser` |
+
+> Angular 17+ genera la salida en `dist/<proyecto>/browser`. Si el output apunta solo a `dist/agroconecta_frontend`, Vercel devuelve 404.
+
+### `angular.json` — fileReplacements
+
+En la configuración `production` debe existir:
+
+```json
+"fileReplacements": [
+  {
+    "replace": "src/environments/environment.ts",
+    "with": "src/environments/environment.prod.ts"
+  }
+]
+```
+
+### Verificar build
+
+```bash
+ng build --configuration production
+grep -R "localhost:8000" dist/agroconecta_frontend/browser
+# No debe haber coincidencias
+```
+
+### Checklist
+
+- [x] `apiUrl` en `environment.prod.ts` apunta a Render
+- [x] `fileReplacements` en `angular.json`
+- [x] Output directory `.../browser` en Vercel
+- [x] Ruta `/auth/verificar-email` para enlaces del correo
+- [ ] Backend con dominio Resend verificado (correo a cualquier usuario)
 - [ ] Íconos PWA finales en `public/`
 
 ---
