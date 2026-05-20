@@ -27,3 +27,10 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
 }
+
+/* Leaflet: asegura que el mapa ocupe el contenedor en producción */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}

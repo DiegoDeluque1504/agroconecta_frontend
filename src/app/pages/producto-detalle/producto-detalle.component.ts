@@ -13,6 +13,11 @@ import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService } from '../../core/services/producto.service';
+import {
+  crearMapaLeaflet,
+  crearMarcador,
+  cuandoContenedorMapaListo,
+} from '../../core/utils/leaflet-map.util';
 import { AuthService } from '../../core/services/auth.service';
 import { ProductoDetalle } from '../../core/models/index';
 
@@ -71,13 +76,12 @@ export class ProductoDetalleComponent implements OnInit, OnDestroy {
       next: (p) => {
         this.producto.set(p);
         this.cargando.set(false);
-        // Inicializa el mapa si el productor tiene ubicación
         if (p.productor.latitud && p.productor.longitud) {
-          setTimeout(() => this.iniciarMapaProductor(
+          this.programarMapaProductor(
             Number(p.productor.latitud),
             Number(p.productor.longitud),
-            p.productor.nombre
-          ), 150);
+            p.productor.nombre,
+          );
         }
       },
       error: () => {
@@ -88,33 +92,28 @@ export class ProductoDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
+  private programarMapaProductor(lat: number, lng: number, nombre: string): void {
+    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
+    cuandoContenedorMapaListo(
+      () => this.mapaProductor?.nativeElement,
+      () => void this.iniciarMapaProductor(lat, lng, nombre),
+    );
+  }
+
   private async iniciarMapaProductor(lat: number, lng: number, nombre: string): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
-    if (!this.mapaProductor?.nativeElement) return;
+    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
+    const contenedor = this.mapaProductor?.nativeElement;
+    if (!contenedor) return;
 
-    const L = await import('leaflet');
-
-    const iconDefault = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
+    const { L, mapa } = await crearMapaLeaflet(contenedor, {
+      lat,
+      lng,
+      zoom: 13,
+      zoomControl: true,
+      dragging: true,
     });
-    L.Marker.prototype.options.icon = iconDefault;
-
-    this.mapa = L.map(this.mapaProductor.nativeElement, { zoomControl: true, dragging: true }).setView([lat, lng], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(this.mapa);
-
-    L.marker([lat, lng]).addTo(this.mapa)
-      .bindPopup(`📍 ${nombre}`)
-      .openPopup();
+    this.mapa = mapa;
+    crearMarcador(L, mapa, lat, lng, `📍 ${nombre}`);
   }
 
   get imagenes() {

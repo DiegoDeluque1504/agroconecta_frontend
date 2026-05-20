@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -18,6 +18,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { PerfilService } from '../../core/services/perfil.service';
 import { ProductoService } from '../../core/services/producto.service';
 import { Municipio } from '../../core/models/index';
+import {
+  crearMapaLeaflet,
+  crearMarcador,
+  cuandoContenedorMapaListo,
+} from '../../core/utils/leaflet-map.util';
 
 @Component({
   selector: 'app-perfil',
@@ -95,9 +100,8 @@ export class PerfilComponent implements OnInit, OnDestroy {
           this.longitudSel.set(Number(u.longitud));
         }
         this.cargandoPerfil.set(false);
-        // Inicializa el mapa después de que Angular renderice el div
         if (this.auth.esProductor()) {
-          setTimeout(() => this.iniciarMapa(), 100);
+          this.programarInicioMapa();
         }
       },
       error: () => {
@@ -116,10 +120,18 @@ export class PerfilComponent implements OnInit, OnDestroy {
         }
         this.cargandoPerfil.set(false);
         if (this.auth.esProductor()) {
-          setTimeout(() => this.iniciarMapa(), 100);
+          this.programarInicioMapa();
         }
       },
     });
+  }
+
+  private programarInicioMapa(): void {
+    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
+    cuandoContenedorMapaListo(
+      () => this.mapaContainer?.nativeElement,
+      () => void this.iniciarMapa(),
+    );
   }
 
   ngOnDestroy(): void {
@@ -130,54 +142,31 @@ export class PerfilComponent implements OnInit, OnDestroy {
   }
 
   private async iniciarMapa(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
-    if (!this.mapaContainer?.nativeElement) return;
+    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
+    const contenedor = this.mapaContainer?.nativeElement;
+    if (!contenedor) return;
 
-    // Importación dinámica para evitar errores en SSR
-    const L = await import('leaflet');
-
-    // Corrige el ícono del marcador (problema conocido de Leaflet + bundlers)
-    const iconDefault = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
-    });
-    L.Marker.prototype.options.icon = iconDefault;
-
-    // Centro inicial: La Guajira, Colombia
     const lat = this.latitudSel() ?? 11.5444;
     const lng = this.longitudSel() ?? -72.9072;
 
-    this.mapa = L.map(this.mapaContainer.nativeElement).setView([lat, lng], 10);
+    const { L, mapa } = await crearMapaLeaflet(contenedor, { lat, lng, zoom: 10 });
+    this.mapa = mapa;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(this.mapa);
-
-    // Si ya tiene ubicación, coloca el marcador
     if (this.latitudSel() && this.longitudSel()) {
-      this.marcador = L.marker([lat, lng]).addTo(this.mapa)
-        .bindPopup('Tu ubicación actual').openPopup();
+      this.marcador = crearMarcador(L, mapa, lat, lng, 'Tu ubicación actual');
     }
 
-    // Clic en el mapa → mueve el marcador y actualiza las coordenadas
-    this.mapa.on('click', (e: any) => {
-      const { lat, lng } = e.latlng;
-      this.latitudSel.set(parseFloat(lat.toFixed(6)));
-      this.longitudSel.set(parseFloat(lng.toFixed(6)));
+    mapa.on('click', (e: { latlng: { lat: number; lng: number } }) => {
+      const { lat: clickLat, lng: clickLng } = e.latlng;
+      this.latitudSel.set(parseFloat(clickLat.toFixed(6)));
+      this.longitudSel.set(parseFloat(clickLng.toFixed(6)));
 
       if (this.marcador) {
-        this.marcador.setLatLng([lat, lng]);
+        this.marcador.setLatLng([clickLat, clickLng]);
       } else {
-        this.marcador = L.marker([lat, lng]).addTo(this.mapa)
-          .bindPopup('Tu ubicación seleccionada').openPopup();
+        this.marcador = crearMarcador(L, mapa, clickLat, clickLng);
       }
-      this.marcador.bindPopup(`📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`).openPopup();
+      this.marcador.bindPopup(`📍 ${clickLat.toFixed(5)}, ${clickLng.toFixed(5)}`).openPopup();
     });
   }
 
