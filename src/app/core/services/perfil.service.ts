@@ -30,7 +30,7 @@ export class PerfilService {
     return this.http.put<Usuario>(`${API}/usuarios/perfil/`, datos);
   }
 
-  // POST /usuarios/cambiar-password/ — cambia la contraseña (endpoint pendiente en backend)
+  // POST /usuarios/cambiar-password/ — cambia la contraseña del usuario autenticado
   cambiarPassword(actual: string, nueva: string): Observable<{ mensaje: string }> {
     return this.http.post<{ mensaje: string }>(`${API}/usuarios/cambiar-password/`, {
       password_actual: actual,

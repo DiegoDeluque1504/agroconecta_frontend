@@ -259,7 +259,13 @@ export class PerfilComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.cambiandoPass.set(false);
-        const msg = err.error?.password_actual?.[0] ?? err.error?.detail ?? err.error?._mensaje ?? 'Contraseña actual incorrecta';
+        const msg =
+          err.error?.password_actual?.[0] ??
+          err.error?.password_nueva?.[0] ??
+          err.error?.error ??
+          err.error?.detail ??
+          err.error?._mensaje ??
+          'No se pudo cambiar la contraseña';
         this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
       },
     });

@@ -10,6 +10,13 @@
     <p>Inicia sesión en tu cuenta</p>
   </div>
 
+    @if (mensajeModoRestringido) {
+      <div class="guest-limit-banner" role="status">
+        <i class="pi pi-info-circle"></i>
+        <p>{{ mensajeModoRestringido }}</p>
+      </div>
+    }
+
     <!-- Formulario -->
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
 

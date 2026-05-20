@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { RespuestaLogin, RespuestaRegistro, Usuario } from '../models/index';
 import { environment } from '../../../environments/environment';
+import { GuestExplorationService } from './guest-exploration.service';
 
 const API = environment.apiUrl;
 
@@ -30,7 +31,11 @@ export class AuthService {
     localStorage.setItem('usuario', JSON.stringify(usuario));
   }
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private guestExploration: GuestExplorationService,
+  ) {}
 
   // Envía email y password al backend, guarda tokens y usuario en localStorage
   login(email: string, password: string): Observable<RespuestaLogin> {
@@ -44,6 +49,7 @@ export class AuthService {
         // Actualizar los signals para que la UI reaccione inmediatamente
         this._token.set(resp.tokens.access);
         this._usuario.set(resp.usuario);
+        this.guestExploration.limpiarModoRestringido();
       })
     );
   }

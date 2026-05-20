@@ -1,600 +1,294 @@
-# 🌿 AgroConecta — Frontend
+# AgroConecta — Frontend
 
-> Marketplace agrícola digital que conecta **productores rurales** con **compradores** de manera directa, transparente y eficiente.
+Marketplace agrícola digital que conecta **productores rurales** con **compradores** de manera directa, transparente y eficiente.
 
-[![Angular](https://img.shields.io/badge/Angular-19-DD0031?logo=angular)](https://angular.dev)
-[![PrimeNG](https://img.shields.io/badge/PrimeNG-19-10B981?logo=primeng)](https://primeng.org)
+[![Angular](https://img.shields.io/badge/Angular-20-DD0031?logo=angular)](https://angular.dev)
+[![PrimeNG](https://img.shields.io/badge/PrimeNG-20-10B981?logo=primeng)](https://primeng.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Repositorio backend:** [agroconecta_backend](https://github.com/DiegoDeluque1504/agroconecta_backend)
 
 ---
 
-## 📋 Tabla de Contenidos
+## Descripción del proyecto
 
-1. [Descripción del Proyecto](#-descripción-del-proyecto)
-2. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
-3. [Requisitos Previos](#-requisitos-previos)
-4. [Instalación y Configuración](#-instalación-y-configuración)
-5. [Estructura del Proyecto](#-estructura-del-proyecto)
-6. [Arquitectura Técnica](#-arquitectura-técnica)
-7. [Módulos y Páginas](#-módulos-y-páginas)
-8. [Servicios y API](#-servicios-y-api)
-9. [Guards y Seguridad](#-guards-y-seguridad)
-10. [Modelos de Datos](#-modelos-de-datos)
-11. [Flujos de Usuario](#-flujos-de-usuario)
-12. [Variables de Entorno](#-variables-de-entorno)
-13. [Scripts Disponibles](#-scripts-disponibles)
-14. [Convenciones de Código](#-convenciones-de-código)
+SPA en **Angular 20** (standalone components + Signals) que consume la API Django REST con autenticación **JWT**.
+
+- **Productores:** publicar productos, negociar, crear pedidos, actualizar estados, marcar ubicación en mapa.
+- **Compradores:** explorar catálogo, iniciar negociaciones, seguir pedidos, calificar.
+- **Roles duales:** un usuario puede ser productor y comprador a la vez; el rol activo depende del contexto (dueño del producto vs. quien inició la negociación).
 
 ---
 
-## 🌾 Descripción del Proyecto
-
-**AgroConecta** es una plataforma web SPA (Single Page Application) desarrollada en **Angular 19** que sirve como marketplace para el sector agrícola colombiano. Permite:
-
-- A los **productores** publicar sus productos, gestionar pedidos y negociar directamente con compradores.
-- A los **compradores** explorar el catálogo, contactar productores, realizar pedidos y calificar entregas.
-- A ambos roles gestionar **negociaciones en tiempo real** mediante un sistema de chat integrado.
-
-El frontend se comunica con un backend **Django REST Framework** a través de una API RESTful con autenticación **JWT**.
-
----
-
-## 🛠️ Tecnologías Utilizadas
+## Stack tecnológico
 
 | Tecnología | Versión | Propósito |
 |---|---|---|
-| [Angular](https://angular.dev) | 19.x | Framework SPA principal |
-| [TypeScript](https://www.typescriptlang.org) | 5.x | Lenguaje de programación |
-| [PrimeNG](https://primeng.org) | 19.x | Librería de componentes UI |
-| [RxJS](https://rxjs.dev) | 7.x | Programación reactiva / HTTP |
-| [Angular Signals](https://angular.dev/guide/signals) | 19 | Estado reactivo local |
-| [Angular Router](https://angular.dev/guide/routing) | 19 | Enrutamiento SPA |
+| Angular | 20.x | Framework SPA |
+| TypeScript | 5.x | Lenguaje |
+| PrimeNG | 20.x | Componentes UI |
+| RxJS | 7.x | HTTP reactivo |
+| Leaflet | 1.9.x | Mapa de ubicación (perfil productor) |
+| Angular Service Worker | 20.x | PWA |
 
 ---
 
-## 📦 Requisitos Previos
+## Requisitos previos
 
-Antes de clonar y ejecutar el proyecto, asegúrate de tener instalado:
-
-| Herramienta | Versión mínima | Verificación |
-|---|---|---|
-| [Node.js](https://nodejs.org) | **18.x** o superior | `node --version` |
-| [npm](https://www.npmjs.com) | **9.x** o superior | `npm --version` |
-| [Angular CLI](https://angular.dev/tools/cli) | **19.x** | `npx ng version` |
-| Backend AgroConecta corriendo | — | `curl http://localhost:8000/api/v1/` |
-
-> **⚠️ Importante:** El frontend requiere que el backend Django esté corriendo en `http://localhost:8000`. Consulta el repositorio del backend para instrucciones de instalación.
+| Herramienta | Versión mínima |
+|---|---|
+| Node.js | 18.x+ (recomendado 20.x) |
+| npm | 9.x+ |
+| Angular CLI | 20.x |
+| Backend AgroConecta | `http://localhost:8000` |
 
 ---
 
-## 🚀 Instalación y Configuración
-
-### 1. Clonar el repositorio
+## Instalación
 
 ```bash
 git clone https://github.com/DiegoDeluque1504/agroconecta_frontend.git
 cd agroconecta_frontend
-```
-
-### 2. Instalar dependencias
-
-```bash
 npm install
+npm start
 ```
 
-> Esto instalará Angular, PrimeNG y todas las dependencias listadas en `package.json`. Puede tardar 1-2 minutos.
+App en **http://localhost:4200**
 
-### 3. Configurar la URL del backend
+### Variables de entorno
 
-La URL base del backend se gestiona en un único archivo de entorno. Si tu backend corre en un host o puerto diferente a `http://localhost:8000`, edita **solo este archivo**:
+La URL del API está centralizada en `src/environments/`:
 
 ```typescript
-// src/environments/environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8000/api/v1',  // ← Cambia solo aquí
-};
-```
-
-Todos los servicios importan automáticamente `environment.apiUrl`, por lo que un único cambio se propaga a toda la app.
-
-### 4. Levantar el servidor de desarrollo
-
-```bash
-npm run start
-# o equivalentemente:
-npx ng serve
-```
-
-La aplicación estará disponible en: **http://localhost:4200**
-
-El servidor se recarga automáticamente cuando guardas cambios en el código (Hot Module Replacement).
-
-### 5. Build de producción (opcional)
-
-```bash
-npm run build
-```
-
-Los archivos compilados quedan en `dist/agroconecta_frontend/`.
-
----
-
-## 📂 Estructura del Proyecto
-
-```
-agroconecta_frontend/
-├── src/
-│   ├── app/
-│   │   ├── app.ts                    # Componente raíz
-│   │   ├── app.config.ts             # Configuración global (HTTP, Router, Animations, PrimeNG)
-│   │   ├── app.routes.ts             # Definición de todas las rutas
-│   │   │
-│   │   ├── core/                     # Lógica central (singleton)
-│   │   │   ├── guards/
-│   │   │   │   └── auth.guard.ts     # authGuard, guestGuard, producerGuard
-│   │   │   ├── interceptors/
-│   │   │   │   └── auth.interceptor.ts  # JWT + manejo global de errores HTTP
-│   │   │   ├── models/
-│   │   │   │   └── index.ts          # Todas las interfaces TypeScript
-│   │   │   └── services/
-│   │   │       ├── auth.service.ts      # Login, registro, tokens JWT
-│   │   │       ├── producto.service.ts  # CRUD productos, categorías, municipios
-│   │   │       ├── negociacion.service.ts # Chat y negociaciones
-│   │   │       ├── pedido.service.ts    # Pedidos y estados
-│   │   │       ├── perfil.service.ts    # Perfil de usuario
-│   │   │       └── notificacion.service.ts # Notificaciones
-│   │   │
-│   │   ├── layout/                   # Componentes de estructura global
-│   │   │   ├── header/
-│   │   │   │   ├── header.component.ts
-│   │   │   │   ├── header.component.html
-│   │   │   │   └── header.component.css
-│   │   │   └── main-layout/
-│   │   │       └── main-layout.component.ts  # Router outlet principal
-│   │   │
-│   │   └── pages/                    # Páginas de la aplicación (lazy loading)
-│   │       ├── auth/
-│   │       │   ├── login/            # Página de inicio de sesión
-│   │       │   └── registro/         # Página de registro
-│   │       ├── catalogo/             # Catálogo público de productos
-│   │       ├── producto-detalle/     # Detalle de un producto
-│   │       ├── publicar-producto/    # Formulario de publicación (solo productores)
-│   │       ├── mis-productos/        # Gestión de productos propios (solo productores)
-│   │       ├── negociaciones/        # Chat entre comprador y productor
-│   │       ├── pedidos/              # Historial y gestión de pedidos
-│   │       ├── perfil/               # Perfil y contraseña
-│   │       └── notificaciones/       # Centro de notificaciones
-│   │
-│   ├── styles.css                    # Estilos globales y tema PrimeNG
-│   └── main.ts                       # Bootstrap de la aplicación
-│
-├── public/                           # Assets estáticos
-├── angular.json                      # Configuración del workspace Angular
-├── tsconfig.app.json                 # Configuración TypeScript
-└── package.json                      # Dependencias npm
-```
-
----
-
-## 🏗️ Arquitectura Técnica
-
-### Patrón General
-
-```
-Usuario → Componente (página) → Servicio → HTTP Interceptor → Backend API
-                ↓
-          Angular Signals
-         (estado reactivo)
-```
-
-### Configuración de la App (`app.config.ts`)
-
-La app usa **standalone components** (sin NgModules). La configuración global incluye:
-
-```typescript
-provideRouter(routes)           // Enrutamiento con lazy loading
-provideHttpClient(withInterceptors([authInterceptor]))  // HTTP + JWT automático
-provideAnimations()             // Animaciones para PrimeNG Toast
-providePrimeNG({ theme: ... })  // Tema verde personalizado
-```
-
-### Estado Reactivo con Signals
-
-Todos los componentes usan `signal<T>()` de Angular para el estado local, en lugar de variables simples. Esto garantiza detección de cambios eficiente:
-
-```typescript
-productos = signal<ProductoLista[]>([]);
-cargando  = signal(true);
-error     = signal<string | null>(null);
-```
-
-### Lazy Loading
-
-Todas las páginas se cargan bajo demanda (`loadComponent`). El bundle inicial es ~560kB gzipado; las páginas se descargan solo cuando el usuario las visita.
-
----
-
-## 📄 Módulos y Páginas
-
-### 🔐 Autenticación (`/auth`)
-
-| Ruta | Componente | Descripción |
-|---|---|---|
-| `/auth/login` | `LoginComponent` | Formulario con email/contraseña. Redirige a `/catalogo` si el login es exitoso. Muestra toast de error si las credenciales son incorrectas. Timeout de 15s para evitar carga infinita. |
-| `/auth/registro` | `RegistroComponent` | Registro con selección de roles (Productor / Comprador, ambos simultáneos). Incluye campo de confirmación de contraseña y validación de mínimo 8 caracteres. |
-
-> Ambas rutas están protegidas por `guestGuard`: si el usuario ya está autenticado, es redirigido a `/catalogo`.
-
----
-
-### 🛒 Catálogo (`/catalogo`)
-
-**Acceso:** Solo usuarios autenticados.
-
-Muestra todos los productos activos del sistema con:
-- **Barra de búsqueda** por nombre (filtro en tiempo real con debounce de 400ms)
-- **Filtro por categoría** (dropdown con categorías del backend)
-- **Paginación** (12 productos por página)
-- **Skeleton loading** mientras carga
-- **Estado de error** con botón "Reintentar" si la carga falla
-- **Estado vacío** con mensaje informativo si no hay productos
-
----
-
-### 📦 Detalle de Producto (`/producto/:id`)
-
-Muestra la información completa de un producto:
-- Imagen, nombre, descripción, precio, cantidad disponible, municipio
-- Información del productor
-- Botón **"Iniciar Negociación"** (solo compradores): crea o reanuda una negociación con el productor
-- Botón **"Agregar al pedido"**: crea un pedido directamente
-
----
-
-### 📝 Publicar Producto (`/publicar`) — *Solo Productores*
-
-Formulario completo para publicar un nuevo producto:
-- Nombre, descripción, precio, cantidad, unidad de medida
-- Selección de categoría y municipio
-- **Subida de imagen** con preview visual antes de guardar
-- Validación completa del formulario con mensajes de error
-
----
-
-### 📋 Mis Productos (`/mis-productos`) — *Solo Productores*
-
-Panel de gestión de los productos propios:
-- Lista de todos los productos del productor autenticado
-- **Editar** producto (inline o modal)
-- **Eliminar** producto con confirmación
-- **Cambiar estado** (activo/inactivo)
-- Skeleton loading y empty state
-
----
-
-### 💬 Negociaciones (`/negociaciones`)
-
-Interfaz de chat estilo WhatsApp Web:
-- **Panel izquierdo:** Lista de todas las negociaciones con preview del último mensaje y badge de mensajes no leídos
-- **Panel derecho:** Conversación activa con burbujas de mensajes diferenciadas (propio/otro)
-- Envío de mensajes con Enter o botón
-- Acciones según rol:
-  - **Productor:** puede "Cerrar" una negociación
-  - **Comprador:** puede "Cancelar" una negociación
-- Estados de negociación: `abierta` · `cerrada` · `cancelada`
-- Scroll automático al último mensaje
-
----
-
-### 🚚 Pedidos (`/pedidos`)
-
-Gestión de pedidos con interfaz de dos paneles:
-- **Panel izquierdo:** Lista de pedidos con nombre del producto, contraparte, precio y estado
-- **Panel derecho:** Detalle del pedido seleccionado con timeline del historial de estados
-
-**Flujo de estados (solo productores pueden cambiarlos):**
-```
-confirmado → en_preparacion → en_camino → entregado
-     └──────────────────────────────────→ cancelado
-```
-
-**Calificación:** El comprador puede calificar el pedido (1-5 estrellas + comentario) una vez esté `entregado`.
-
----
-
-### 🔔 Notificaciones (`/notificaciones`)
-
-Centro de notificaciones del sistema:
-- Lista de todas las notificaciones con indicador de leído/no leído
-- Marcar como leída individualmente o todas a la vez
-- Badge en el header con conteo de notificaciones no leídas (se actualiza cada vez que se entra a la página)
-
----
-
-### 👤 Perfil (`/perfil`)
-
-Gestión del perfil de usuario:
-- Muestra avatar con iniciales, nombre completo, email y roles
-- **Skeleton loading** mientras carga los datos frescos del servidor
-- **Formulario de datos personales:** nombre, apellido, teléfono, municipio
-- **Formulario de cambio de contraseña:** contraseña actual + nueva (mínimo 8 caracteres)
-
----
-
-## 🔌 Servicios y API
-
-Todos los servicios usan `HttpClient` con el interceptor de autenticación aplicado automáticamente.
-
-### `AuthService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `login(email, password)` | `POST /usuarios/login/` | Autenticación, guarda tokens en localStorage |
-| `registro(data)` | `POST /usuarios/registro/` | Registro de nuevo usuario |
-| `refreshToken()` | `POST /usuarios/token/refresh/` | Renueva el access token usando el refresh token |
-| `logout()` | — | Limpia localStorage y redirige a `/auth/login` |
-| `token()` | — | Signal con el access token actual |
-| `usuario()` | — | Signal con los datos del usuario autenticado |
-| `esProductor()` | — | Computed: `true` si el usuario tiene rol de productor |
-
-### `ProductoService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `getCatalogo(params)` | `GET /productos/` | Lista paginada con filtros (búsqueda, categoría) |
-| `getDetalle(id)` | `GET /productos/:id/` | Detalle de un producto |
-| `getMisProductos()` | `GET /productos/mis-productos/` | Productos del productor autenticado |
-| `publicar(formData)` | `POST /productos/` | Crea un nuevo producto con imagen |
-| `actualizar(id, data)` | `PATCH /productos/:id/` | Actualiza un producto |
-| `eliminar(id)` | `DELETE /productos/:id/` | Elimina un producto |
-| `getCategorias()` | `GET /categorias/` | Lista de categorías |
-| `getMunicipios()` | `GET /municipios/` | Lista de municipios |
-
-### `NegociacionService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `getMisNegociaciones()` | `GET /negociaciones/` | Lista de negociaciones del usuario |
-| `getDetalle(id)` | `GET /negociaciones/:id/` | Detalle con todos los mensajes |
-| `iniciar(productoId)` | `POST /negociaciones/` | Inicia o reanuda una negociación |
-| `enviarTexto(id, texto)` | `POST /negociaciones/:id/mensajes/` | Envía un mensaje de texto |
-| `cambiarEstado(id, estado)` | `PATCH /negociaciones/:id/` | Cambia estado (cerrada/cancelada) |
-
-### `PedidoService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `getMisPedidos()` | `GET /pedidos/mis-pedidos/` | Pedidos del usuario (comprador o productor) |
-| `getDetalle(id)` | `GET /pedidos/:id/` | Detalle con historial de estados |
-| `cambiarEstado(id, estado, obs)` | `PATCH /pedidos/:id/estado/` | Cambia estado (solo productor) |
-| `calificar(id, puntos, comentario)` | `POST /pedidos/:id/calificar/` | Califica un pedido entregado |
-
-### `PerfilService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `getMiPerfil()` | `GET /usuarios/perfil/` | Obtiene datos frescos del usuario |
-| `actualizarPerfil(data)` | `PATCH /usuarios/perfil/` | Actualiza nombre, teléfono, municipio |
-| `cambiarPassword(actual, nueva)` | `POST /usuarios/cambiar-password/` | Cambia la contraseña |
-
-### `NotificacionService`
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `getMisNotificaciones()` | `GET /notificaciones/` | Lista de notificaciones |
-| `getConteo()` | `GET /notificaciones/no-leidas/` | Número de notificaciones no leídas |
-| `marcarLeida(id)` | `PATCH /notificaciones/:id/` | Marca una notificación como leída |
-| `marcarTodasLeidas()` | `POST /notificaciones/marcar-todas/` | Marca todas como leídas |
-
----
-
-## 🛡️ Guards y Seguridad
-
-El archivo `src/app/core/guards/auth.guard.ts` contiene tres guards:
-
-| Guard | Propósito | Redirige a |
-|---|---|---|
-| `authGuard` | Protege rutas privadas. Verifica que haya token en localStorage. | `/auth/login` si no autenticado |
-| `guestGuard` | Protege rutas de auth. Evita que usuarios logueados vean login/registro. | `/catalogo` si ya autenticado |
-| `producerGuard` | Protege rutas exclusivas de productores. | `/catalogo` si no es productor |
-
-### Interceptor HTTP (`auth.interceptor.ts`)
-
-El interceptor se ejecuta **automáticamente en cada petición HTTP** y hace:
-
-1. **Inyecta el JWT** en el header `Authorization: Bearer <token>` (excepto en rutas de auth)
-2. **Refresh automático:** Si recibe un `401`, intenta renovar el token con el refresh token. Si el refresh también falla, cierra sesión automáticamente.
-3. **Mensajes de error enriquecidos:** Convierte códigos HTTP a mensajes legibles en español:
-   - `0` → "No se pudo conectar con el servidor"
-   - `400` → "Solicitud incorrecta. Verifica los datos enviados."
-   - `403` → "No tienes permiso para realizar esta acción."
-   - `404` → "El recurso solicitado no fue encontrado."
-   - `500` → "Error interno del servidor. Intenta más tarde."
-
----
-
-## 📐 Modelos de Datos
-
-Todas las interfaces TypeScript están centralizadas en `src/app/core/models/index.ts`:
-
-```typescript
-// Autenticación
-interface RespuestaLogin { access: string; refresh: string; user: Usuario; }
-interface Usuario {
-  id: number; email: string; first_name: string; last_name: string;
-  es_productor: boolean; es_comprador: boolean;
-  telefono?: string; municipio?: number;
-}
-
-// Productos
-interface ProductoLista { id: number; nombre: string; precio: number; foto?: string; ... }
-interface ProductoDetalle extends ProductoLista { descripcion: string; productor_nombre: string; ... }
-interface CategoriaProducto { id: number; nombre: string; }
-interface Municipio { id: number; nombre: string; }
-
-// Negociaciones
-interface NegociacionLista { id: number; producto_nombre: string; estado: string; ... }
-interface NegociacionDetalle extends NegociacionLista { mensajes: Mensaje[]; }
-interface Mensaje { id: number; tipo: 'texto' | 'audio'; contenido?: string; remitente: number; ... }
-
-// Pedidos
-type EstadoPedido = 'confirmado' | 'en_preparacion' | 'en_camino' | 'entregado' | 'cancelado';
-interface PedidoLista { id: number; producto_nombre: string; estado_actual: EstadoPedido; ... }
-interface PedidoDetalle extends PedidoLista { historial: HistorialEstado[]; }
-
-// Notificaciones
-interface Notificacion { id: number; titulo: string; mensaje: string; leida: boolean; ... }
-```
-
----
-
-## 🔄 Flujos de Usuario
-
-### Flujo de Comprador
-
-```
-Registro (rol: comprador)
-  → Login
-  → Catálogo (buscar/filtrar productos)
-  → Detalle del producto
-  → Iniciar negociación (chat con productor)
-  → Acordar precio → Productor crea pedido
-  → Pedidos (seguir estado: confirmado → entregado)
-  → Calificar entrega (1-5 ⭐)
-```
-
-### Flujo de Productor
-
-```
-Registro (rol: productor)
-  → Login
-  → Publicar producto (foto + datos)
-  → Mis Productos (editar/activar/desactivar)
-  → Negociaciones (responder compradores)
-  → Pedidos (cambiar estado del pedido)
-  → Notificaciones (alertas del sistema)
-```
-
----
-
-## ⚙️ Variables de Entorno
-
-La URL del backend está centralizada en `src/environments/`. Todos los servicios la leen desde `environment.apiUrl`.
-
-```typescript
-// src/environments/environment.ts — Desarrollo local
+// src/environments/environment.ts (desarrollo)
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8000/api/v1',
 };
 
-// src/environments/environment.prod.ts — Producción
+// src/environments/environment.prod.ts (producción)
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8000/api/v1', // ← Cambiar por la URL del servidor real
+  apiUrl: 'http://localhost:8000/api/v1', // ← cambiar por URL real del backend
 };
 ```
 
-### Uso en servicios
+Todos los servicios usan `environment.apiUrl`. En build de producción, Angular sustituye automáticamente el archivo.
 
-Cada servicio importa la variable de esta forma:
-
-```typescript
-import { environment } from '../../../environments/environment';
-
-const API = environment.apiUrl;
+```bash
+npm run build   # usa environment.prod.ts
 ```
-
-### Build de producción
-
-Angular CLI sustituye automáticamente `environment.ts` por `environment.prod.ts` durante `ng build --configuration=production`. No se requiere ningún cambio manual de archivos.
 
 ---
 
-## 📜 Scripts Disponibles
+## Estructura del proyecto
+
+```
+src/app/
+├── core/
+│   ├── guards/auth.guard.ts           # authGuard, guestGuard, producerGuard, guestExplorationGuard
+│   ├── interceptors/auth.interceptor.ts
+│   ├── services/                      # auth, producto, negociacion, pedido, perfil, notificacion
+│   ├── services/guest-exploration.service.ts
+│   ├── utils/login-error.util.ts
+│   └── models/index.ts
+├── layout/                            # header, main-layout
+└── pages/
+    ├── auth/login, auth/registro
+    ├── catalogo, producto-detalle
+    ├── publicar-producto, mis-productos
+    ├── negociaciones, pedidos, perfil, notificaciones
+```
+
+---
+
+## Rutas principales
+
+| Ruta | Acceso | Descripción |
+|---|---|---|
+| `/auth/login` | Invitado | Login con detección de bloqueo Axes |
+| `/auth/registro` | Invitado | Registro + verificación de email en pantalla |
+| `/catalogo` | Autenticado | Catálogo con búsqueda, filtros y paginación |
+| `/producto/:id` | Autenticado | Detalle; botón negociar (no para el dueño) |
+| `/publicar` | Productor | Crear/editar producto + galería de fotos |
+| `/mis-productos` | Productor | Gestión de productos propios |
+| `/negociaciones` | Autenticado | Chat, audio, crear pedido, cerrar sin acuerdo |
+| `/pedidos` | Autenticado | Timeline de estados y calificación |
+| `/perfil` | Autenticado | Datos, contraseña, mapa Leaflet (productor) |
+| `/notificaciones` | Autenticado | Centro de notificaciones |
+
+---
+
+## Servicios y endpoints (alineados con el backend)
+
+### AuthService
+
+| Método | Endpoint |
+|---|---|
+| `login()` | `POST /usuarios/login/` |
+| `registro()` | `POST /usuarios/registro/` |
+| `verificarEmail()` | `POST /usuarios/verificar-email/` |
+| `refreshToken()` | `POST /usuarios/token/refresh/` |
+
+### ProductoService
+
+| Método | Endpoint |
+|---|---|
+| `getCatalogo()` | `GET /productos/catalogo/` |
+| `getDetalle()` | `GET /productos/:id/` |
+| `getCategorias()` | `GET /productos/categorias/` |
+| `getMunicipios()` | `GET /usuarios/municipios/` |
+| `getMisProductos()` | `GET /productos/mis-productos/` |
+| `publicar()` | `POST /productos/crear/` |
+| `actualizar()` | `PATCH /productos/:id/gestionar/` |
+| `eliminar()` | `DELETE /productos/:id/gestionar/` |
+| `agregarFoto()` | `POST /productos/:id/fotos/agregar/` |
+| `eliminarFoto()` | `DELETE /productos/fotos/:id/eliminar/` |
+
+### NegociacionService
+
+| Método | Endpoint |
+|---|---|
+| `getMisNegociaciones()` | `GET /negociaciones/mis-negociaciones/` |
+| `getDetalle()` | `GET /negociaciones/:id/` |
+| `iniciar()` | `POST /negociaciones/iniciar/:productoId/` |
+| `enviarTexto()` / `enviarAudio()` | `POST /negociaciones/:id/mensajes/` |
+| `cambiarEstado()` | `POST /negociaciones/:id/estado/` |
+
+### PedidoService
+
+| Método | Endpoint |
+|---|---|
+| `getMisPedidos()` | `GET /pedidos/mis-pedidos/` |
+| `getDetalle()` | `GET /pedidos/:id/` |
+| `crearDesdeNegociacion()` | `POST /pedidos/crear/:negociacionId/` |
+| `cambiarEstado()` | `POST /pedidos/:id/estado/` |
+| `calificar()` | `POST /pedidos/:id/calificar/` |
+
+### PerfilService
+
+| Método | Endpoint |
+|---|---|
+| `getMiPerfil()` | `GET /usuarios/perfil/` |
+| `actualizarPerfil()` | `PUT /usuarios/perfil/` |
+| `cambiarPassword()` | `POST /usuarios/cambiar-password/` |
+
+### NotificacionService
+
+| Método | Endpoint |
+|---|---|
+| `getMisNotificaciones()` | `GET /notificaciones/` |
+| `getConteo()` | `GET /notificaciones/no-leidas/` |
+| `marcarLeida()` | `POST /notificaciones/:id/leer/` |
+| `marcarTodasLeidas()` | `POST /notificaciones/leer-todas/` |
+
+---
+
+## Seguridad y manejo de errores
+
+### Interceptor HTTP (`auth.interceptor.ts`)
+
+- Inyecta `Authorization: Bearer <token>` en peticiones protegidas
+- Refresh automático ante 401
+- Códigos traducidos a español (400, 403, 404, 429, 500)
+- **429 / 403 `guest_exploration_limit`:** activa modo restringido y redirige a login
+- **`api_rate_limit`:** límite diario de usuario autenticado
+
+### Login y django-axes
+
+El login distingue:
+
+| Situación | Código | Mensaje en UI |
+|---|---|---|
+| Credenciales incorrectas | 401 `invalid_credentials` | Correo o contraseña incorrectos |
+| IP bloqueada por Axes | 429 `axes_lockout` | Acceso bloqueado + tiempo restante |
+
+Implementado en `core/utils/login-error.util.ts`.
+
+### Modo restringido (visitantes)
+
+Tras **100 peticiones/día** sin autenticarse, el backend responde `guest_exploration_limit`. El frontend:
+
+1. Guarda estado en `sessionStorage` (`GuestExplorationService`)
+2. Redirige a login con banner explicativo
+3. Login y registro siguen disponibles
+4. Al autenticarse, limpia el modo restringido
+
+---
+
+## Flujos de usuario
+
+### Comprador
+
+```
+Registro → Verificar email → Login → Catálogo → Detalle → Iniciar negociación
+→ Chat → (productor crea pedido) → Pedidos → Calificar
+```
+
+### Productor
+
+```
+Registro → Login → Publicar producto → Negociaciones → Crear pedido (si hay acuerdo)
+→ Actualizar estados → Notificaciones
+```
+
+### Negociaciones (productor)
+
+| Acción | Cuándo |
+|---|---|
+| **Crear pedido** | Hubo acuerdo; negociación `abierta` |
+| **Cerrar** | Sin acuerdo; pasa a `cerrada`, no se crea pedido |
+| **Cancelar** | Cancelar la negociación |
+
+---
+
+## Guards
+
+| Guard | Función |
+|---|---|
+| `authGuard` | Rutas privadas → login si no hay token |
+| `guestGuard` | Login/registro → catálogo si ya hay sesión |
+| `producerGuard` | Rutas de productor |
+| `guestExplorationGuard` | Bloquea catálogo/detalle en modo restringido |
+
+---
+
+## Scripts
 
 ```bash
-# Servidor de desarrollo (con hot reload)
-npm start
-# o
-npx ng serve
-
-# Build de producción
-npm run build
-
-# Ejecutar tests unitarios
-npm test
-
-# Ver versión de Angular CLI
+npm start          # ng serve (desarrollo)
+npm run build      # build producción
+npm test           # tests unitarios
 npx ng version
 ```
 
 ---
 
-## 📏 Convenciones de Código
+## Convenciones
 
-### Nombres de archivos
-- Componentes: `nombre-pagina.component.ts` / `.html` / `.css`
-- Servicios: `nombre.service.ts`
-- Guards: `nombre.guard.ts`
-- Modelos: `index.ts` (archivo único centralizado)
-
-### Estilo de componentes
-- Todos los componentes son **standalone** (sin NgModules)
-- Estado local con **Angular Signals** (`signal<T>()`)
-- Inyección de dependencias con `inject()` (no constructor)
-- Templates con **control flow** de Angular 17+ (`@if`, `@for`, `@else`)
-
-### Manejo de errores en componentes
-
-```typescript
-this.servicio.getData().subscribe({
-  next: (data) => {
-    this.datos.set(data);
-    this.cargando.set(false);
-  },
-  error: (err) => {
-    this.cargando.set(false);
-    // Usa el mensaje del interceptor si está disponible
-    const msg = err.error?.detail ?? err.error?._mensaje ?? 'Mensaje genérico';
-    this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
-  },
-});
-```
-
-### Estados de UI (patrón de 3 estados)
-
-Toda página con datos asíncronos implementa el patrón de **3 estados**:
-
-```html
-<!-- 1. Loading -->
-@if (cargando()) { <p-skeleton /> }
-
-<!-- 2. Error -->
-@if (!cargando() && error()) {
-  <div class="error-state">
-    <p>{{ error() }}</p>
-    <button (click)="cargar()">Reintentar</button>
-  </div>
-}
-
-<!-- 3. Contenido (con empty state si lista vacía) -->
-@if (!cargando() && !error()) {
-  @if (datos().length === 0) { <div class="empty-state">Sin resultados</div> }
-  @else { <!-- lista de items --> }
-}
-```
+- Componentes **standalone** con `inject()` y **Signals**
+- Control flow: `@if`, `@for`
+- Patrón UI: `cargando` / `error` / contenido (skeleton + reintentar + empty state)
+- Errores del backend: preferir `err.error?.error` o `err.error?.detail`
 
 ---
 
-## 👥 Equipo
+## Producción (checklist)
 
-Proyecto académico desarrollado por el equipo de **AgroConecta**.
+- [ ] Actualizar `apiUrl` en `environment.prod.ts`
+- [ ] Backend en HTTPS con CORS apuntando al dominio del frontend
+- [ ] Probar flujo E2E: registro → verificar → login → pedido completo
+- [ ] Íconos PWA finales en `public/`
 
 ---
 
-## 📄 Licencia
+## Equipo
 
-Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.
+Proyecto académico — Universidad de La Guajira, Ingeniería de Sistemas.
+
+| Integrante | Área |
+|---|---|
+| Diego De Luque | Backend / coordinación |
+| Carlos Basilio | Backend |
+| David Royero | Frontend |
+| Daniel Royero | Frontend |

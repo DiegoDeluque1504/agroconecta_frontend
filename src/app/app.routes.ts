@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, producerGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, producerGuard, guestExplorationGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // ─── RUTAS DE AUTENTICACIÓN (solo sin sesión) ─────────────────────
@@ -24,6 +24,7 @@ export const routes: Routes = [
   // ─── RUTAS PÚBLICAS (con header, sin requerir login) ──────────────
   {
     path: '',
+    canActivate: [guestExplorationGuard],
     loadComponent: () =>
       import('./layout/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     children: [

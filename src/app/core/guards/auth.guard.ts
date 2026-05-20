@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { GuestExplorationService } from '../services/guest-exploration.service';
 
 
 // Guard para rutas SEMI-PÚBLICAS: deja pasar siempre, pero el componente
@@ -11,10 +12,12 @@ export const optionalAuthGuard: CanActivateFn = () => true;
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  const guest = inject(GuestExplorationService);
 
-  if (auth.estaAutenticado()) return true; // Tiene sesión, puede entrar
+  if (auth.estaAutenticado()) return true;
 
-  router.navigate(['/auth/login']);
+  const queryParams = guest.enModoRestringido() ? { reason: 'guest_limit' } : {};
+  router.navigate(['/auth/login'], { queryParams });
   return false;
 };
 
@@ -39,5 +42,21 @@ export const producerGuard: CanActivateFn = () => {
 
   // Es comprador: no tiene acceso a estas secciones
   router.navigate(['/catalogo']);
+  return false;
+};
+
+/**
+ * Rutas públicas de exploración (catálogo, detalle de producto).
+ * Si el visitante agotó su cuota anónima, redirige a login/registro.
+ */
+export const guestExplorationGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const guest = inject(GuestExplorationService);
+  const router = inject(Router);
+
+  if (auth.estaAutenticado()) return true;
+  if (!guest.enModoRestringido()) return true;
+
+  router.navigate(['/auth/login'], { queryParams: { reason: 'guest_limit' } });
   return false;
 };

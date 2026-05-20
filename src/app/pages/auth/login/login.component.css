@@ -24,6 +24,29 @@
   margin-bottom: 2rem;
 }
 
+.guest-limit-banner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.guest-limit-banner p {
+  margin: 0;
+}
+
+.guest-limit-banner i {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
 .auth-logo {
   font-size: 3rem;
   margin-bottom: 0.5rem;

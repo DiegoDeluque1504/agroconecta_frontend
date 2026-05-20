@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { timeout, TimeoutError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -12,6 +12,15 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../core/services/auth.service';
+import {
+  getAxesLockoutMessage,
+  getInvalidCredentialsMessage,
+  isAxesLockoutError,
+} from '../../../core/utils/login-error.util';
+import {
+  GUEST_EXPLORATION_MESSAGE,
+  GuestExplorationService,
+} from '../../../core/services/guest-exploration.service';
 
 @Component({
   selector: 'app-login',
@@ -33,15 +42,22 @@ export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toast = inject(MessageService);
+  private guestExploration = inject(GuestExplorationService);
 
   cargando = false;
+  mensajeModoRestringido: string | null = null;
 
   ngOnInit(): void {
-    // Limpia tokens viejos para evitar que el interceptor interfiera con el login
     if (!this.auth.estaAutenticado()) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+    }
+
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'guest_limit' || this.guestExploration.enModoRestringido()) {
+      this.mensajeModoRestringido = GUEST_EXPLORATION_MESSAGE;
     }
   }
 
@@ -74,31 +90,37 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
+        const body = err.error;
+        const bloqueado = isAxesLockoutError(err.status, body);
 
+        let summary = 'Error al iniciar sesión';
         let msg: string;
+
         if (err instanceof TimeoutError) {
-          // El servidor no respondió en 10s
           msg = 'El servidor no responde. Verifica tu conexión e intenta de nuevo.';
         } else if (err.status === 0) {
-          // Error de red: sin conexión o backend caído
           msg = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+        } else if (bloqueado) {
+          summary = 'Acceso bloqueado temporalmente';
+          msg = getAxesLockoutMessage(body);
         } else if (err.status === 401 || err.status === 400) {
-          // Credenciales incorrectas (Django devuelve 401 o 400)
-          msg =
-            err.error?.detail ||
-            err.error?.error ||
-            err.error?.non_field_errors?.[0] ||
-            'Correo o contraseña incorrectos.';
+          msg = getInvalidCredentialsMessage(body);
+          if (typeof body === 'object' && body?.non_field_errors?.[0]) {
+            msg = body.non_field_errors[0];
+          }
         } else {
-          // Cualquier otro error del servidor
           msg =
-            err.error?.detail ||
-            err.error?.error ||
-            (typeof err.error === 'object' ? String(Object.values(err.error).flat()[0]) : null) ||
+            (typeof body === 'object' ? body?.detail || body?.error : null) ||
+            (typeof body === 'object' ? String(Object.values(body).flat()[0]) : null) ||
             `Error del servidor (${err.status}). Intenta de nuevo.`;
         }
 
-        this.toast.add({ severity: 'error', summary: 'Error al iniciar sesión', detail: msg, life: 5000 });
+        this.toast.add({
+          severity: 'error',
+          summary,
+          detail: msg,
+          life: bloqueado ? 8000 : 5000,
+        });
       },
     });
   }
