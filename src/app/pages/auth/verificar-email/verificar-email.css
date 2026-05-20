@@ -1,0 +1,14 @@
+.verificacion-container {
+  max-width: 500px;
+  margin: 120px auto;
+  text-align: center;
+  padding: 2rem;
+}
+
+.success {
+  color: #16a34a;
+}
+
+.error {
+  color: #dc2626;
+}

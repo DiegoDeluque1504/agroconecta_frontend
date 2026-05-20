@@ -2,6 +2,13 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard, producerGuard, guestExplorationGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  // Redirección por si un correo antiguo apunta a /verificar-email
+  {
+    path: 'verificar-email',
+    redirectTo: 'auth/verificar-email',
+    pathMatch: 'full',
+  },
+
   // ─── RUTAS DE AUTENTICACIÓN (solo sin sesión) ─────────────────────
   {
     path: 'auth',
@@ -16,6 +23,13 @@ export const routes: Routes = [
         path: 'registro',
         loadComponent: () =>
           import('./pages/auth/registro/registro.component').then((m) => m.RegistroComponent),
+      },
+      {
+        path: 'verificar-email',
+        loadComponent: () =>
+          import('./pages/auth/verificar-email/verificar-email').then(
+            (m) => m.VerificarEmailComponent
+          ),
       },
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],

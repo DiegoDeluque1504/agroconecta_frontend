@@ -124,14 +124,13 @@ export class RegistroComponent {
     this.verificando = true;
 
     this.auth.verificarEmail(token).subscribe({
-      next: () => {
+      next: (resp) => {
         this.verificando = false;
-        // Redirige al login con un toast de bienvenida
-        this.router.navigate(['/auth/login']).then(() => {
+        this.router.navigate(['/catalogo']).then(() => {
           this.toast.add({
             severity: 'success',
             summary: '¡Cuenta verificada!',
-            detail: 'Ya puedes iniciar sesión con tu cuenta',
+            detail: resp.mensaje || 'Bienvenido a AgroConecta',
             life: 5000,
           });
         });

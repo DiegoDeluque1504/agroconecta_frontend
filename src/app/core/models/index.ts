@@ -56,6 +56,12 @@ export interface RespuestaRegistro {
   email: string;
 }
 
+export interface RespuestaVerificacion {
+  mensaje: string;
+  tokens: TokensJWT;
+  usuario: Usuario;
+}
+
 // ------------------------------------------------------------
 // CATEGORÍA DE PRODUCTO
 // Tabla fija con 8 categorías agrícolas

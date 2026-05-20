@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { RespuestaLogin, RespuestaRegistro, Usuario } from '../models/index';
+import { RespuestaLogin, RespuestaRegistro, RespuestaVerificacion, Usuario } from '../models/index';
 import { environment } from '../../../environments/environment';
 import { GuestExplorationService } from './guest-exploration.service';
 
@@ -60,8 +60,17 @@ export class AuthService {
   }
 
   // Verifica el email con el token enviado al correo del usuario
-  verificarEmail(token: string): Observable<{ mensaje: string }> {
-    return this.http.post<{ mensaje: string }>(`${API}/usuarios/verificar-email/`, { token });
+  verificarEmail(token: string): Observable<RespuestaVerificacion> {
+    return this.http.post<RespuestaVerificacion>(`${API}/usuarios/verificar-email/`, { token }).pipe(
+      tap((resp) => {
+        localStorage.setItem('access_token', resp.tokens.access);
+        localStorage.setItem('refresh_token', resp.tokens.refresh);
+        localStorage.setItem('usuario', JSON.stringify(resp.usuario));
+        this._token.set(resp.tokens.access);
+        this._usuario.set(resp.usuario);
+        this.guestExploration.limpiarModoRestringido();
+      })
+    );
   }
 
   // Cierra sesión: limpia localStorage y redirige al login

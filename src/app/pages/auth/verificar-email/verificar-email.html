@@ -1,0 +1,21 @@
+<div class="verificacion-container">
+
+  @if (cargando()) {
+    <h2>Verificando correo...</h2>
+  }
+
+  @if (exito()) {
+    <h2 class="success">
+      {{ exito() }}
+    </h2>
+
+    <p>Redirigiendo al catálogo...</p>
+  }
+
+  @if (error()) {
+    <h2 class="error">
+      {{ error() }}
+    </h2>
+  }
+
+</div>
