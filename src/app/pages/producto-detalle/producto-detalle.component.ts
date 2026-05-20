@@ -1,4 +1,15 @@
-import { Component, inject, OnInit, OnDestroy, signal, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  ViewChild,
+  ElementRef,
+  PLATFORM_ID,
+  afterNextRender,
+  Injector,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -47,11 +58,13 @@ export class ProductoDetalleComponent implements OnInit, OnDestroy {
   auth                   = inject(AuthService);
   private toast          = inject(MessageService);
   private platformId     = inject(PLATFORM_ID);
+  private injector       = inject(Injector);
 
   producto = signal<ProductoDetalle | null>(null);
   cargando = signal(true);
   private redirectTimer: ReturnType<typeof setTimeout> | null = null;
   private mapa: any = null;
+  private mapaProgramado = false;
 
   galleriaOpts = {
     showThumbnails: true,
@@ -92,28 +105,48 @@ export class ProductoDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
-  private programarMapaProductor(lat: number, lng: number, nombre: string): void {
-    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
-    cuandoContenedorMapaListo(
-      () => this.mapaProductor?.nativeElement,
-      () => void this.iniciarMapaProductor(lat, lng, nombre),
+  private obtenerContenedorMapa(): HTMLElement | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return (
+      document.getElementById('mapa-producto-agroconecta') ??
+      this.mapaProductor?.nativeElement ??
+      null
     );
   }
 
-  private async iniciarMapaProductor(lat: number, lng: number, nombre: string): Promise<void> {
+  private programarMapaProductor(lat: number, lng: number, nombre: string): void {
+    if (!isPlatformBrowser(this.platformId) || this.mapa || this.mapaProgramado) return;
+    this.mapaProgramado = true;
+
+    afterNextRender(
+      () => {
+        cuandoContenedorMapaListo(
+          () => this.obtenerContenedorMapa(),
+          () => this.iniciarMapaProductor(lat, lng, nombre),
+        );
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private iniciarMapaProductor(lat: number, lng: number, nombre: string): void {
     if (!isPlatformBrowser(this.platformId) || this.mapa) return;
-    const contenedor = this.mapaProductor?.nativeElement;
+    const contenedor = this.obtenerContenedorMapa();
     if (!contenedor) return;
 
-    const { L, mapa } = await crearMapaLeaflet(contenedor, {
-      lat,
-      lng,
-      zoom: 13,
-      zoomControl: true,
-      dragging: true,
-    });
-    this.mapa = mapa;
-    crearMarcador(L, mapa, lat, lng, `📍 ${nombre}`);
+    try {
+      const { L, mapa } = crearMapaLeaflet(contenedor, {
+        lat,
+        lng,
+        zoom: 13,
+        zoomControl: true,
+        dragging: true,
+      });
+      this.mapa = mapa;
+      crearMarcador(L, mapa, lat, lng, `📍 ${nombre}`);
+    } catch (err) {
+      console.error('Error al iniciar mapa del producto:', err);
+    }
   }
 
   get imagenes() {

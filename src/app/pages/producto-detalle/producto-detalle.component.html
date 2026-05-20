@@ -114,7 +114,11 @@
         @if (!esElProductor() && producto()?.productor?.latitud && producto()?.productor?.longitud) {
           <div class="ubicacion-card">
             <h3><i class="pi pi-map-marker"></i> Ubicación del productor</h3>
-            <div #mapaProductor class="mapa-productor"></div>
+            <div
+              id="mapa-producto-agroconecta"
+              #mapaProductor
+              class="mapa-productor"
+            ></div>
           </div>
         }
         <!-- Botón de negociación -->

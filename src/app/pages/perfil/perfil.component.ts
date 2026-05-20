@@ -1,4 +1,15 @@
-import { Component, inject, OnInit, OnDestroy, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  ElementRef,
+  ViewChild,
+  PLATFORM_ID,
+  afterNextRender,
+  Injector,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -17,12 +28,14 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '../../core/services/auth.service';
 import { PerfilService } from '../../core/services/perfil.service';
 import { ProductoService } from '../../core/services/producto.service';
-import { Municipio } from '../../core/models/index';
+import { Municipio, Usuario } from '../../core/models/index';
 import {
   crearMapaLeaflet,
   crearMarcador,
   cuandoContenedorMapaListo,
 } from '../../core/utils/leaflet-map.util';
+
+const MAPA_PERFIL_ID = 'mapa-perfil-agroconecta';
 
 @Component({
   selector: 'app-perfil',
@@ -45,39 +58,40 @@ import {
   styleUrl: './perfil.component.css',
 })
 export class PerfilComponent implements OnInit, OnDestroy {
-  @ViewChild('mapaContainer') mapaContainer!: ElementRef;
+  @ViewChild('mapaContainer') mapaContainer!: ElementRef<HTMLElement>;
 
-  private fb             = inject(FormBuilder);
-  auth                   = inject(AuthService);
-  private perfilService  = inject(PerfilService);
+  private fb = inject(FormBuilder);
+  auth = inject(AuthService);
+  private perfilService = inject(PerfilService);
   private productoService = inject(ProductoService);
-  private toast          = inject(MessageService);
-  private platformId     = inject(PLATFORM_ID);
+  private toast = inject(MessageService);
+  private platformId = inject(PLATFORM_ID);
+  private injector = inject(Injector);
 
-  municipios      = signal<Municipio[]>([]);
-  guardando       = signal(false);
-  cambiandoPass   = signal(false);
-  cargandoPerfil  = signal(true);
-  guardandoUbic   = signal(false);
+  municipios = signal<Municipio[]>([]);
+  guardando = signal(false);
+  cambiandoPass = signal(false);
+  cargandoPerfil = signal(true);
+  guardandoUbic = signal(false);
+  mapaError = signal('');
 
-  // Coordenadas seleccionadas en el mapa
-  latitudSel  = signal<number | null>(null);
+  latitudSel = signal<number | null>(null);
   longitudSel = signal<number | null>(null);
 
-  // Instancia del mapa Leaflet (any para evitar imports en SSR)
   private mapa: any = null;
   private marcador: any = null;
+  private mapaProgramado = false;
 
   formPerfil: FormGroup = this.fb.group({
     first_name: ['', Validators.required],
-    last_name:  ['', Validators.required],
-    telefono:   [''],
-    municipio:  [null],
+    last_name: ['', Validators.required],
+    telefono: [''],
+    municipio: [null],
   });
 
   formPass: FormGroup = this.fb.group({
     actual: ['', Validators.required],
-    nueva:  ['', [Validators.required, Validators.minLength(8)]],
+    nueva: ['', [Validators.required, Validators.minLength(8)]],
   });
 
   ngOnInit(): void {
@@ -86,32 +100,15 @@ export class PerfilComponent implements OnInit, OnDestroy {
     });
 
     this.perfilService.getMiPerfil().subscribe({
-      next: (u) => {
-        this.auth.actualizarUsuario(u);
-        this.formPerfil.patchValue({
-          first_name: u.first_name,
-          last_name:  u.last_name,
-          telefono:   u.telefono ?? '',
-          municipio:  u.municipio ?? null,
-        });
-        // Carga coordenadas existentes si las tiene
-        if (u.latitud && u.longitud) {
-          this.latitudSel.set(Number(u.latitud));
-          this.longitudSel.set(Number(u.longitud));
-        }
-        this.cargandoPerfil.set(false);
-        if (this.auth.esProductor()) {
-          this.programarInicioMapa();
-        }
-      },
+      next: (u) => this.aplicarPerfil(u),
       error: () => {
         const u = this.auth.usuario();
         if (u) {
           this.formPerfil.patchValue({
             first_name: u.first_name,
-            last_name:  u.last_name,
-            telefono:   u.telefono ?? '',
-            municipio:  u.municipio ?? null,
+            last_name: u.last_name,
+            telefono: u.telefono ?? '',
+            municipio: u.municipio ?? null,
           });
           if (u.latitud && u.longitud) {
             this.latitudSel.set(Number(u.latitud));
@@ -119,19 +116,62 @@ export class PerfilComponent implements OnInit, OnDestroy {
           }
         }
         this.cargandoPerfil.set(false);
-        if (this.auth.esProductor()) {
-          this.programarInicioMapa();
-        }
+        this.programarInicioMapa();
       },
     });
   }
 
-  private programarInicioMapa(): void {
-    if (!isPlatformBrowser(this.platformId) || this.mapa) return;
-    cuandoContenedorMapaListo(
-      () => this.mapaContainer?.nativeElement,
-      () => void this.iniciarMapa(),
+  private aplicarPerfil(u: Usuario): void {
+    this.auth.actualizarUsuario(u);
+    this.formPerfil.patchValue({
+      first_name: u.first_name,
+      last_name: u.last_name,
+      telefono: u.telefono ?? '',
+      municipio: u.municipio ?? null,
+    });
+    if (u.latitud && u.longitud) {
+      this.latitudSel.set(Number(u.latitud));
+      this.longitudSel.set(Number(u.longitud));
+    }
+    this.cargandoPerfil.set(false);
+    this.programarInicioMapa();
+  }
+
+  private obtenerContenedorMapa(): HTMLElement | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return (
+      document.getElementById(MAPA_PERFIL_ID) ??
+      this.mapaContainer?.nativeElement ??
+      null
     );
+  }
+
+  private programarInicioMapa(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.auth.esProductor() || this.mapaProgramado) {
+      return;
+    }
+    this.mapaProgramado = true;
+    this.mapaError.set('');
+
+    afterNextRender(
+      () => {
+        cuandoContenedorMapaListo(
+          () => this.obtenerContenedorMapa(),
+          () => void this.iniciarMapa(),
+        );
+      },
+      { injector: this.injector },
+    );
+  }
+
+  reintentarMapa(): void {
+    if (this.mapa) {
+      this.mapa.remove();
+      this.mapa = null;
+      this.marcador = null;
+    }
+    this.mapaProgramado = false;
+    this.programarInicioMapa();
   }
 
   ngOnDestroy(): void {
@@ -141,33 +181,43 @@ export class PerfilComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async iniciarMapa(): Promise<void> {
+  private iniciarMapa(): void {
     if (!isPlatformBrowser(this.platformId) || this.mapa) return;
-    const contenedor = this.mapaContainer?.nativeElement;
-    if (!contenedor) return;
 
-    const lat = this.latitudSel() ?? 11.5444;
-    const lng = this.longitudSel() ?? -72.9072;
-
-    const { L, mapa } = await crearMapaLeaflet(contenedor, { lat, lng, zoom: 10 });
-    this.mapa = mapa;
-
-    if (this.latitudSel() && this.longitudSel()) {
-      this.marcador = crearMarcador(L, mapa, lat, lng, 'Tu ubicación actual');
+    const contenedor = this.obtenerContenedorMapa();
+    if (!contenedor) {
+      this.mapaError.set('No se encontró el contenedor del mapa.');
+      return;
     }
 
-    mapa.on('click', (e: { latlng: { lat: number; lng: number } }) => {
-      const { lat: clickLat, lng: clickLng } = e.latlng;
-      this.latitudSel.set(parseFloat(clickLat.toFixed(6)));
-      this.longitudSel.set(parseFloat(clickLng.toFixed(6)));
+    try {
+      const lat = this.latitudSel() ?? 11.5444;
+      const lng = this.longitudSel() ?? -72.9072;
 
-      if (this.marcador) {
-        this.marcador.setLatLng([clickLat, clickLng]);
-      } else {
-        this.marcador = crearMarcador(L, mapa, clickLat, clickLng);
+      const { L, mapa } = crearMapaLeaflet(contenedor, { lat, lng, zoom: 10 });
+      this.mapa = mapa;
+      this.mapaError.set('');
+
+      if (this.latitudSel() && this.longitudSel()) {
+        this.marcador = crearMarcador(L, mapa, lat, lng, 'Tu ubicación actual');
       }
-      this.marcador.bindPopup(`📍 ${clickLat.toFixed(5)}, ${clickLng.toFixed(5)}`).openPopup();
-    });
+
+      mapa.on('click', (e: { latlng: { lat: number; lng: number } }) => {
+        const { lat: clickLat, lng: clickLng } = e.latlng;
+        this.latitudSel.set(parseFloat(clickLat.toFixed(6)));
+        this.longitudSel.set(parseFloat(clickLng.toFixed(6)));
+
+        if (this.marcador) {
+          this.marcador.setLatLng([clickLat, clickLng]);
+        } else {
+          this.marcador = crearMarcador(L, mapa, clickLat, clickLng);
+        }
+        this.marcador.bindPopup(`📍 ${clickLat.toFixed(5)}, ${clickLng.toFixed(5)}`).openPopup();
+      });
+    } catch (err) {
+      console.error('Error al iniciar mapa Leaflet:', err);
+      this.mapaError.set('No se pudo cargar el mapa. Pulsa Reintentar.');
+    }
   }
 
   guardarUbicacion(): void {
@@ -178,19 +228,22 @@ export class PerfilComponent implements OnInit, OnDestroy {
     const v = this.formPerfil.value;
     this.guardandoUbic.set(true);
 
-    // PUT requiere todos los campos — combinamos perfil + coordenadas
     this.perfilService.actualizarPerfil({
       first_name: v.first_name,
-      last_name:  v.last_name,
-      telefono:   v.telefono || null,
-      municipio:  v.municipio ?? null,
-      latitud:    parseFloat(lat.toFixed(6)),
-      longitud:   parseFloat(lng.toFixed(6)),
+      last_name: v.last_name,
+      telefono: v.telefono || null,
+      municipio: v.municipio ?? null,
+      latitud: parseFloat(lat.toFixed(6)),
+      longitud: parseFloat(lng.toFixed(6)),
     }).subscribe({
       next: (u) => {
         this.auth.actualizarUsuario(u);
         this.guardandoUbic.set(false);
-        this.toast.add({ severity: 'success', summary: 'Ubicación guardada', detail: 'Tu ubicación se actualizó correctamente' });
+        this.toast.add({
+          severity: 'success',
+          summary: 'Ubicación guardada',
+          detail: 'Tu ubicación se actualizó correctamente',
+        });
       },
       error: (err) => {
         this.guardandoUbic.set(false);
@@ -212,15 +265,18 @@ export class PerfilComponent implements OnInit, OnDestroy {
   }
 
   guardarPerfil(): void {
-    if (this.formPerfil.invalid) { this.formPerfil.markAllAsTouched(); return; }
+    if (this.formPerfil.invalid) {
+      this.formPerfil.markAllAsTouched();
+      return;
+    }
     this.guardando.set(true);
     const v = this.formPerfil.value;
 
     this.perfilService.actualizarPerfil({
       first_name: v.first_name,
-      last_name:  v.last_name,
-      telefono:   v.telefono || null,
-      municipio:  v.municipio ?? null,
+      last_name: v.last_name,
+      telefono: v.telefono || null,
+      municipio: v.municipio ?? null,
     }).subscribe({
       next: (usuario) => {
         this.auth.actualizarUsuario(usuario);
@@ -236,7 +292,10 @@ export class PerfilComponent implements OnInit, OnDestroy {
   }
 
   cambiarPassword(): void {
-    if (this.formPass.invalid) { this.formPass.markAllAsTouched(); return; }
+    if (this.formPass.invalid) {
+      this.formPass.markAllAsTouched();
+      return;
+    }
     this.cambiandoPass.set(true);
     const v = this.formPass.value;
 

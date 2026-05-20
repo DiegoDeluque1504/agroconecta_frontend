@@ -146,3 +146,23 @@
   background: #e5e7eb;
 }
 .mt-2 { margin-top: 0.75rem; }
+
+.mapa-error {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mapa-reintentar {
+  border: 1px solid #d97706;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}

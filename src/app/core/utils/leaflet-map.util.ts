@@ -1,17 +1,13 @@
+import * as L from 'leaflet';
 import type { Map, Marker } from 'leaflet';
 
-export type LeafletModule = typeof import('leaflet');
+export type LeafletModule = typeof L;
 
 const LEAFLET_IMAGES = '/leaflet';
 
-/** Carga Leaflet solo en el navegador. */
-export async function cargarLeaflet(): Promise<LeafletModule> {
-  return import('leaflet');
-}
-
 /** Íconos servidos desde el build (evita CDN bloqueados en producción). */
-export function configurarIconosLeaflet(L: LeafletModule): void {
-  const iconDefault = L.icon({
+export function configurarIconosLeaflet(leaflet: LeafletModule = L): void {
+  const iconDefault = leaflet.icon({
     iconUrl: `${LEAFLET_IMAGES}/marker-icon.png`,
     iconRetinaUrl: `${LEAFLET_IMAGES}/marker-icon-2x.png`,
     shadowUrl: `${LEAFLET_IMAGES}/marker-shadow.png`,
@@ -20,12 +16,12 @@ export function configurarIconosLeaflet(L: LeafletModule): void {
     popupAnchor: [1, -34],
     shadowSize: [41, 41],
   });
-  L.Marker.prototype.options.icon = iconDefault;
+  leaflet.Marker.prototype.options.icon = iconDefault;
 }
 
 /** Capa base (CARTO + OSM; HTTPS y buen soporte en móvil). */
-export function agregarCapaMapa(L: LeafletModule, mapa: Map): void {
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+export function agregarCapaMapa(leaflet: LeafletModule, mapa: Map): void {
+  leaflet.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
@@ -42,12 +38,11 @@ export interface CrearMapaOpciones {
 }
 
 /** Crea el mapa en un contenedor DOM ya visible. */
-export async function crearMapaLeaflet(
+export function crearMapaLeaflet(
   contenedor: HTMLElement,
   opciones: CrearMapaOpciones,
-): Promise<{ L: LeafletModule; mapa: Map }> {
-  const L = await cargarLeaflet();
-  configurarIconosLeaflet(L);
+): { L: LeafletModule; mapa: Map } {
+  configurarIconosLeaflet();
 
   const mapa = L.map(contenedor, {
     zoomControl: opciones.zoomControl ?? true,
@@ -56,48 +51,59 @@ export async function crearMapaLeaflet(
 
   agregarCapaMapa(L, mapa);
 
-  // Tras layout / @if de Angular, Leaflet a veces queda en gris hasta invalidateSize
-  requestAnimationFrame(() => {
-    mapa.invalidateSize();
-    requestAnimationFrame(() => mapa.invalidateSize());
-  });
+  const refrescarTamano = (): void => {
+    mapa.invalidateSize({ animate: false });
+  };
+
+  requestAnimationFrame(refrescarTamano);
+  setTimeout(refrescarTamano, 100);
+  setTimeout(refrescarTamano, 400);
 
   return { L, mapa };
 }
 
 /**
- * Espera a que el contenedor exista en el DOM (p. ej. dentro de @if).
- * Reintenta con rAF para producción y móvil.
+ * Espera a que el contenedor exista (p. ej. dentro de @if de Angular).
+ * Usa id DOM porque ViewChild a menudo llega tarde en producción.
  */
 export function cuandoContenedorMapaListo(
   obtenerContenedor: () => HTMLElement | null | undefined,
   callback: (el: HTMLElement) => void,
-  maxIntentos = 30,
+  maxIntentos = 60,
 ): void {
   let intentos = 0;
 
   const intentar = (): void => {
     const el = obtenerContenedor();
     if (el) {
-      callback(el);
-      return;
+      const tieneAltura = el.getBoundingClientRect().height > 0;
+      if (tieneAltura || intentos >= 15) {
+        callback(el);
+        return;
+      }
     }
+
     if (intentos >= maxIntentos) return;
     intentos += 1;
     requestAnimationFrame(intentar);
   };
 
   requestAnimationFrame(intentar);
+  // Respaldo por si rAF no alcanza tras el @if de Angular
+  setTimeout(() => {
+    const el = obtenerContenedor();
+    if (el) callback(el);
+  }, 500);
 }
 
 export function crearMarcador(
-  L: LeafletModule,
+  leaflet: LeafletModule,
   mapa: Map,
   lat: number,
   lng: number,
   popup?: string,
 ): Marker {
-  const marcador = L.marker([lat, lng]).addTo(mapa);
+  const marcador = leaflet.marker([lat, lng]).addTo(mapa);
   if (popup) {
     marcador.bindPopup(popup).openPopup();
   }

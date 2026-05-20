@@ -138,8 +138,22 @@
           </div>
         }
 
-        <!-- Contenedor del mapa -->
-        <div #mapaContainer class="mapa-container"></div>
+        <!-- Contenedor del mapa (id para init fiable en producción) -->
+        <div
+          id="mapa-perfil-agroconecta"
+          #mapaContainer
+          class="mapa-container"
+        ></div>
+
+        @if (mapaError()) {
+          <p class="mapa-error">
+            <i class="pi pi-exclamation-triangle"></i>
+            {{ mapaError() }}
+            <button type="button" class="mapa-reintentar" (click)="reintentarMapa()">
+              Reintentar
+            </button>
+          </p>
+        }
 
         <div class="form-actions mt-2">
           <p-button
