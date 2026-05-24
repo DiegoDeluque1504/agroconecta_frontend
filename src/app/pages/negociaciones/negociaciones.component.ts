@@ -377,6 +377,9 @@ abrirDialogoPedido(): void {
   }
 
   private ejecutarCicloPolling(): void {
+    if (this.pollingTimer) {
+      clearTimeout(this.pollingTimer);
+    }
     this.pollingTimer = setTimeout(() => {
       // 1. Si la pestaña está oculta, no hacer polling o hacerlo lento
       if (document.hidden) {
@@ -391,15 +394,35 @@ abrirDialogoPedido(): void {
         return;
       }
 
-      // 3. Todo activo, refrescar silenciosamente y reprogramar
-      this.actualizarChatYListaSilencioso();
-      this.ejecutarCicloPolling();
-    }, 4000); // 4 segundos para un tiempo real inmediato y fluido!
+      // 3. Todo activo, refrescar silenciosamente y reprogramar secuencialmente
+      this.actualizarChatYListaSilencioso(() => {
+        this.ejecutarCicloPolling();
+      });
+    }, 4000); // 4 segundos
   }
 
-  actualizarChatYListaSilencioso(): void {
+  private conteoCiclosList = 0;
+
+  actualizarChatYListaSilencioso(onComplete?: () => void): void {
     const id = this.negociacionActivaId();
+    this.conteoCiclosList++;
+
+    // Si no hay chat activo, refrescamos la lista cada 8s (2 ciclos).
+    // Si hay chat activo, refrescamos el chat cada 4s y la lista cada 20s (5 ciclos).
+    const debeRefrescarLista = !id ? (this.conteoCiclosList >= 2) : (this.conteoCiclosList >= 5);
+
+    let llamadasCompletadas = 0;
+    let llamadasTotales = 0;
+
+    const alCompletarLlamada = () => {
+      llamadasCompletadas++;
+      if (llamadasCompletadas === llamadasTotales && onComplete) {
+        onComplete();
+      }
+    };
+
     if (id) {
+      llamadasTotales++;
       this.negociacionService.getDetalle(id).subscribe({
         next: (data) => {
           const currentDetalle = this.detalle();
@@ -407,19 +430,38 @@ abrirDialogoPedido(): void {
             currentDetalle.mensajes.length !== data.mensajes.length ||
             (currentDetalle.mensajes.length > 0 && data.mensajes.length > 0 && 
              currentDetalle.mensajes[currentDetalle.mensajes.length - 1].id !== data.mensajes[data.mensajes.length - 1].id);
+          
           if (tieneNuevos) {
             this.detalle.set(data);
             this.debeScroll = true;
+            // Refrescar lista de inmediato si hay mensajes nuevos para sincronizar preview y badges
+            llamadasTotales++;
+            this.negociacionService.getMisNegociaciones().subscribe({
+              next: (listaData) => { this.lista.set(listaData); alCompletarLlamada(); },
+              error: () => { alCompletarLlamada(); }
+            });
           }
-        }
+          alCompletarLlamada();
+        },
+        error: () => { alCompletarLlamada(); }
       });
     }
-    // Refrescar lista de chats silenciosamente (ej. para badges de no leídos)
-    this.negociacionService.getMisNegociaciones().subscribe({
-      next: (data) => {
-        this.lista.set(data);
-      }
-    });
+
+    if (debeRefrescarLista) {
+      this.conteoCiclosList = 0;
+      llamadasTotales++;
+      this.negociacionService.getMisNegociaciones().subscribe({
+        next: (listaData) => {
+          this.lista.set(listaData);
+          alCompletarLlamada();
+        },
+        error: () => { alCompletarLlamada(); }
+      });
+    }
+
+    if (llamadasTotales === 0 && onComplete) {
+      onComplete();
+    }
   }
 
   private scrollAlFinal(): void {
