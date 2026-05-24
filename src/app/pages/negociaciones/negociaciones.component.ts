@@ -343,19 +343,58 @@ abrirDialogoPedido(): void {
 
   // ── Polling en Segundo Plano (Tiempo Real) ───────────────
   private pollingTimer: any = null;
+  private ultimoContacto = Date.now();
+  private listenersLimpieza: (() => void)[] = [];
 
   iniciarPolling(): void {
     this.detenerPolling();
-    this.pollingTimer = setInterval(() => {
-      this.actualizarChatYListaSilencioso();
-    }, 15000); // Cada 15 segundos
+    this.ultimoContacto = Date.now();
+
+    const registrarActividad = () => { this.ultimoContacto = Date.now(); };
+
+    window.addEventListener('mousemove', registrarActividad);
+    window.addEventListener('keydown', registrarActividad);
+    window.addEventListener('click', registrarActividad);
+    window.addEventListener('scroll', registrarActividad);
+
+    this.listenersLimpieza = [
+      () => window.removeEventListener('mousemove', registrarActividad),
+      () => window.removeEventListener('keydown', registrarActividad),
+      () => window.removeEventListener('click', registrarActividad),
+      () => window.removeEventListener('scroll', registrarActividad),
+    ];
+
+    this.ejecutarCicloPolling();
   }
 
   detenerPolling(): void {
     if (this.pollingTimer) {
-      clearInterval(this.pollingTimer);
+      clearTimeout(this.pollingTimer);
       this.pollingTimer = null;
     }
+    this.listenersLimpieza.forEach(cleanup => cleanup());
+    this.listenersLimpieza = [];
+  }
+
+  private ejecutarCicloPolling(): void {
+    this.pollingTimer = setTimeout(() => {
+      // 1. Si la pestaña está oculta, no hacer polling o hacerlo lento
+      if (document.hidden) {
+        this.ejecutarCicloPolling();
+        return;
+      }
+
+      // 2. Si el usuario está inactivo (más de 3 minutos), pausar
+      const inactivo = Date.now() - this.ultimoContacto > 180000;
+      if (inactivo) {
+        this.ejecutarCicloPolling();
+        return;
+      }
+
+      // 3. Todo activo, refrescar silenciosamente y reprogramar
+      this.actualizarChatYListaSilencioso();
+      this.ejecutarCicloPolling();
+    }, 4000); // 4 segundos para un tiempo real inmediato y fluido!
   }
 
   actualizarChatYListaSilencioso(): void {
