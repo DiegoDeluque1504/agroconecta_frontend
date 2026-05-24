@@ -156,7 +156,10 @@ export class CatalogoComponent implements OnInit {
 
   // Devuelve la URL de la foto principal o un placeholder
   getFoto(producto: ProductoLista): string {
-    return producto.foto_principal || 'https://placehold.co/400x300/e8f5e9/2d9e5f?text=Sin+foto';
+    const url = producto.foto_principal;
+    if (!url) return 'https://placehold.co/400x300/e8f5e9/2d9e5f?text=Sin+foto';
+    // Cloudinary: convierte a WebP, calidad automática, ancho 400px
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_400,c_fill/');
   }
 
   // Devuelve color del tag según el estado del producto

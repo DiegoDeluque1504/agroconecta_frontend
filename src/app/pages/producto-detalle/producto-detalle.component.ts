@@ -155,7 +155,10 @@ export class ProductoDetalleComponent implements OnInit, OnDestroy {
     if (p.fotos.length === 0) {
       return [{ itemImageSrc: 'https://placehold.co/800x500/e8f5e9/2d9e5f?text=Sin+foto', alt: p.nombre }];
     }
-    return p.fotos.map((f) => ({ itemImageSrc: f.url_cloudinary, alt: p.nombre }));
+    return p.fotos.map((f) => ({
+      itemImageSrc: f.url_cloudinary.replace('/upload/', '/upload/f_auto,q_auto,w_800,c_fill/'),
+      alt: p.nombre
+    }));
   }
 
   getEstadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {

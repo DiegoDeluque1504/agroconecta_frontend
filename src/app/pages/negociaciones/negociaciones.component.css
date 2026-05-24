@@ -386,13 +386,15 @@
 
 /* Burbuja de audio premium (Nota de voz) */
 .audio-message-bubble {
-  background: white;
-  border-radius: 1rem;
-  padding: 0.5rem 0.75rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   display: flex;
-  flex-direction: column;
-  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  min-width: 200px;
+  max-width: 260px;
 }
 
 .mio .audio-message-bubble {
@@ -404,15 +406,28 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .voice-note-icon {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   color: #1a7a46;
+  flex-shrink: 0;
 }
 
 .mio .voice-note-icon {
-  color: white;
+  color: rgba(255,255,255,0.9);
+}
+
+.mensaje-audio {
+  width: 100%;
+  height: 28px;
+  outline: none;
+  accent-color: #1a7a46;
+}
+
+.mio .mensaje-audio {
+  accent-color: white;
 }
 
 /* Estilo para los controles de audio nativos en WebKit */
@@ -433,36 +448,55 @@
 @media (max-width: 768px) {
   .negociaciones-page {
     grid-template-columns: 1fr;
-    height: calc(100vh - 56px); /* adapta a la barra de navegación superior móvil */
+    height: calc(100dvh - 64px);
+    position: relative;
+    overflow: hidden;
   }
-  
+
   .lista-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
   }
-  
+
   .chat-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    transition: transform 0.3s ease;
+    transform: translateX(100%);
   }
 
-  /* Mostrar y ocultar paneles según chat seleccionado */
+  /* Cuando hay chat seleccionado */
   .negociaciones-page.chat-seleccionado .lista-panel {
-    display: none;
+    transform: translateX(-100%);
   }
 
-  .negociaciones-page:not(.chat-seleccionado) .chat-panel {
-    display: none;
+  .negociaciones-page.chat-seleccionado .chat-panel {
+    transform: translateX(0);
+  }
+
+  /* Input fijo sobre el teclado */
+  .input-wrap {
+    position: sticky;
+    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0);
+    background: white;
+    z-index: 20;
   }
 
   .btn-volver {
     display: inline-flex;
   }
+
+  /* Mensajes no desbordados */
+  .mensaje {
+    max-width: 85%;
+  }
 }
+
 /* Grabación de audio */
 .btn-mic {
   flex-shrink: 0;
