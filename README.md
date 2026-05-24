@@ -10,6 +10,15 @@ Marketplace agrícola digital que conecta **productores rurales** con **comprado
 
 ---
 
+## 🚀 Mejoras Recientes (Mayo 2026)
+
+- **Mensajería en tiempo real (Polling Inteligente):** Implementación de polling silencioso y reactivo cada 15 segundos. La vista del chat se actualiza de forma transparente en segundo plano únicamente al recibir nuevos mensajes, evitando parpadeos de skeletons o interrupciones en la lectura del usuario.
+- **Diseño Móvil tipo WhatsApp/Telegram:** Rediseño responsivo del módulo de negociaciones. Los paneles de lista de chat y conversación se alternan a pantalla completa de forma responsiva en móviles mediante lógica de Angular Signals. Se integró un botón de retorno táctil ("Volver") y se garantizó la correcta fijación del input de envío sobre los teclados táctiles de smartphones.
+- **Notas de Voz Premium:** Nueva burbuja de audio `.audio-message-bubble` con ícono de volumen corporativo y filtros CSS WebKit inteligentes (`filter: invert(1)`) para mimetizar perfectamente la interfaz de controles multimedia nativos en burbujas verdes propias.
+- **Corrección de Cancelación de Audio:** Remoción del callback asíncrono `onstop` en el `MediaRecorder` al presionar "X" de cancelación, erradicando por completo el bug de transmisión de grabaciones incompletas.
+
+---
+
 ## Descripción del proyecto
 
 SPA en **Angular 20** (standalone components + Signals) que consume la API Django REST con autenticación **JWT**.

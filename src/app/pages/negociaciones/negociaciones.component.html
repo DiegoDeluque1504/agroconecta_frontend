@@ -1,6 +1,6 @@
 <p-toast />
 
-<div class="negociaciones-page">
+<div class="negociaciones-page" [class.chat-seleccionado]="negociacionActivaId() !== null">
 
   <!-- Panel izquierdo: lista de chats -->
   <aside class="lista-panel">
@@ -79,9 +79,15 @@
 
       <!-- Cabecera -->
       <div class="chat-header">
-        <div>
-          <h3>{{ d.producto_nombre }}</h3>
-          <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
+        <div class="header-info-wrap">
+          <!-- Botón volver (solo visible en móvil) -->
+          <button class="btn-volver" (click)="volverALista()" title="Volver a la lista">
+            <i class="pi pi-arrow-left"></i>
+          </button>
+          <div class="header-texto">
+            <h3>{{ d.producto_nombre }}</h3>
+            <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
+          </div>
         </div>
         <div class="chat-acciones">
           <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
@@ -128,7 +134,12 @@
             @if (msg.tipo === 'texto') {
               <p class="mensaje-texto">{{ msg.contenido }}</p>
             } @else {
-              <audio controls [src]="msg.url_audio!" class="mensaje-audio"></audio>
+              <div class="audio-message-bubble">
+                <div class="audio-player-layout">
+                  <i class="pi pi-volume-up voice-note-icon"></i>
+                  <audio controls [src]="msg.url_audio!" class="mensaje-audio"></audio>
+                </div>
+              </div>
             }
             <span class="mensaje-hora">{{ formatearFecha(msg.created_at) }}</span>
           </div>

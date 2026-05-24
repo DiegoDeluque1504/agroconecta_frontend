@@ -73,10 +73,12 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
     this.cargarLista();
     const productoId = Number(this.route.snapshot.queryParamMap.get('producto'));
     if (productoId) this.iniciarDesdeProducto(productoId);
+    this.iniciarPolling();
   }
 
   ngOnDestroy(): void {
     this.detenerGrabacion(false);
+    this.detenerPolling();
   }
 
   ngAfterViewChecked(): void {
@@ -212,6 +214,12 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
 
     if (!enviar) {
       // Cancela sin enviar
+      if (this.mediaRecorder) {
+        this.mediaRecorder.onstop = null;
+        if (this.mediaRecorder.state !== 'inactive') {
+          this.mediaRecorder.stop();
+        }
+      }
       this.streamActivo?.getTracks().forEach((t) => t.stop());
       this.streamActivo = null;
       this.chunks = [];
@@ -324,6 +332,54 @@ abrirDialogoPedido(): void {
   formatearFecha(fecha: string): string {
     return new Date(fecha).toLocaleString('es-CO', {
       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  // ── Navegación Móvil ─────────────────────────────────────
+  volverALista(): void {
+    this.negociacionActivaId.set(null);
+    this.detalle.set(null);
+  }
+
+  // ── Polling en Segundo Plano (Tiempo Real) ───────────────
+  private pollingTimer: any = null;
+
+  iniciarPolling(): void {
+    this.detenerPolling();
+    this.pollingTimer = setInterval(() => {
+      this.actualizarChatYListaSilencioso();
+    }, 15000); // Cada 15 segundos
+  }
+
+  detenerPolling(): void {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
+    }
+  }
+
+  actualizarChatYListaSilencioso(): void {
+    const id = this.negociacionActivaId();
+    if (id) {
+      this.negociacionService.getDetalle(id).subscribe({
+        next: (data) => {
+          const currentDetalle = this.detalle();
+          const tieneNuevos = !currentDetalle || 
+            currentDetalle.mensajes.length !== data.mensajes.length ||
+            (currentDetalle.mensajes.length > 0 && data.mensajes.length > 0 && 
+             currentDetalle.mensajes[currentDetalle.mensajes.length - 1].id !== data.mensajes[data.mensajes.length - 1].id);
+          if (tieneNuevos) {
+            this.detalle.set(data);
+            this.debeScroll = true;
+          }
+        }
+      });
+    }
+    // Refrescar lista de chats silenciosamente (ej. para badges de no leídos)
+    this.negociacionService.getMisNegociaciones().subscribe({
+      next: (data) => {
+        this.lista.set(data);
+      }
     });
   }
 
