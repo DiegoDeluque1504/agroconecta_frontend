@@ -78,50 +78,52 @@
     @if (!cargandoChat() && detalle(); as d) {
 
       <!-- Cabecera -->
-      <div class="chat-header">
-        <div class="header-info-wrap">
-          <!-- Botón volver (solo visible en móvil) -->
-          <button class="btn-volver" (click)="volverALista()" title="Volver a la lista">
-            <i class="pi pi-arrow-left"></i>
-          </button>
-          <div class="header-texto">
-            <h3>{{ d.producto_nombre }}</h3>
-            <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
-          </div>
-        </div>
-        <div class="chat-acciones">
-          <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
-          @if (d.estado === 'abierta') {
-            @if (soyProductorEnChat()) {
-              <p-button
-                label="Cerrar sin acuerdo"
-                icon="pi pi-check"
-                severity="secondary"
-                size="small"
-                (onClick)="cambiarEstado('cerrada')"
-              />
-            }
-            <p-button
-              label="Cancelar"
-              icon="pi pi-times"
-              severity="danger"
-              size="small"
-              [outlined]="true"
-              (onClick)="cambiarEstado('cancelada')"
-            />
-          }
-          @if (d.estado === 'abierta' && soyProductorEnChat()) {
-            <p-button
-              label="Crear Pedido"
-              icon="pi pi-shopping-bag"
-              severity="success"
-              size="small"
-              [loading]="creandoPedido()"
-              (onClick)="abrirDialogoPedido()"
-            />
-          }
-        </div>
+<div class="chat-header">
+  <div class="chat-header-top">
+    <div class="header-info-wrap">
+      <button class="btn-volver" (click)="volverALista()" title="Volver a la lista">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+      <div class="header-texto">
+        <h3>{{ d.producto_nombre }}</h3>
+        <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
       </div>
+    </div>
+    <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
+  </div>
+
+  @if (d.estado === 'abierta') {
+    <div class="chat-acciones">
+      @if (soyProductorEnChat()) {
+        <p-button
+          label="Cerrar sin acuerdo"
+          icon="pi pi-check"
+          severity="secondary"
+          size="small"
+          (onClick)="cambiarEstado('cerrada')"
+        />
+      }
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="danger"
+        size="small"
+        [outlined]="true"
+        (onClick)="cambiarEstado('cancelada')"
+      />
+      @if (soyProductorEnChat()) {
+        <p-button
+          label="Crear Pedido"
+          icon="pi pi-shopping-bag"
+          severity="success"
+          size="small"
+          [loading]="creandoPedido()"
+          (onClick)="abrirDialogoPedido()"
+        />
+      }
+    </div>
+  }
+</div>
 
       <!-- Burbujas de mensajes -->
       <div #chatContainer class="mensajes-wrap">

@@ -445,6 +445,55 @@
   filter: invert(1);
 }
 
+/* Header restructurado */
+.chat-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chat-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header-texto {
+  min-width: 0;
+  flex: 1;
+}
+
+.header-texto h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-texto small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
   .negociaciones-page {
     grid-template-columns: 1fr;
@@ -494,6 +543,62 @@
   /* Mensajes no desbordados */
   .mensaje {
     max-width: 85%;
+  }
+
+  /* Header del chat en mobile */
+  .chat-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .header-info-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .header-texto {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .header-texto h3 {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .header-texto small {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 200px;
+  }
+
+  /* Acciones en mobile */
+  .chat-acciones {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Todos los botones de acción más compactos */
+  .chat-acciones :host ::ng-deep .p-button {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.6rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  /* El tag de estado no se encoge */
+  .chat-acciones p-tag {
+    flex-shrink: 0;
   }
 }
 
