@@ -79,8 +79,9 @@ export class MisProductosComponent implements OnInit {
             this.toast.add({ severity: 'success', summary: 'Listo', detail: 'Producto eliminado' });
             this.cargar();
           },
-          error: () => {
-            this.toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' });
+          error: (err) => {
+            const msg = err.error?.error || 'No se pudo eliminar';
+            this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
           },
         });
       },
