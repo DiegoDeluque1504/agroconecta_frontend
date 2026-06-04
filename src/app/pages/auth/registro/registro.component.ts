@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,9 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
+
+declare var turnstile: any;
 
 @Component({
   selector: 'app-registro',
@@ -32,23 +35,27 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './registro.component.html',
   styleUrl: './registro.component.css',
 })
-export class RegistroComponent {
+export class RegistroComponent implements OnInit, AfterViewInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
   private toast = inject(MessageService);
 
   cargando    = false;
-  verificando = false;
   exitoso     = false; // true = mostrar pantalla de verificación de email
-  tokenInput  = '';    // valor del campo donde el usuario escribe el token
   emailRegistrado = ''; // guardamos el email para mostrarlo en la pantalla de verificación
+  widgetId: string | null = null;
+  captchaToken: string | null = null;
 
   form: FormGroup = this.fb.group({
     first_name:   ['', [Validators.required]],
     last_name:    ['', [Validators.required]],
     email:        ['', [Validators.required, Validators.email]],
-    password:     ['', [Validators.required, Validators.minLength(8)]],
+    password:     ['', [
+      Validators.required, 
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-zA-Z])(?=.*\d).+$/)
+    ]],
     password2:    ['', [Validators.required]],
     telefono:     [''],
     es_productor: [false],
@@ -60,6 +67,35 @@ export class RegistroComponent {
   get email()      { return this.form.get('email');      }
   get password()   { return this.form.get('password');   }
   get password2()  { return this.form.get('password2');  }
+
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    this.renderCaptcha();
+  }
+
+  renderCaptcha(): void {
+    if (typeof turnstile !== 'undefined') {
+      try {
+        this.widgetId = turnstile.render('#turnstile-container', {
+          sitekey: environment.turnstileSiteKey || '1x00000000000000000000AA',
+          callback: (token: string) => {
+            this.captchaToken = token;
+          },
+          'expired-callback': () => {
+            this.captchaToken = null;
+          },
+          'error-callback': () => {
+            this.captchaToken = null;
+          }
+        });
+      } catch (e) {
+        console.error('Error rendering turnstile:', e);
+      }
+    } else {
+      setTimeout(() => this.renderCaptcha(), 500);
+    }
+  }
 
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
@@ -76,9 +112,23 @@ export class RegistroComponent {
       return;
     }
 
+    if (!this.captchaToken) {
+      this.toast.add({
+        severity: 'warn',
+        summary: 'Validación requerida',
+        detail: 'Por favor, completa el CAPTCHA antes de continuar.',
+      });
+      return;
+    }
+
     this.cargando = true;
 
-    this.auth.registro(this.form.value).pipe(
+    const payload = {
+      ...this.form.value,
+      captcha_token: this.captchaToken
+    };
+
+    this.auth.registro(payload).pipe(
       timeout(15000)
     ).subscribe({
       next: () => {
@@ -109,40 +159,12 @@ export class RegistroComponent {
             'Error al registrarse. Intenta de nuevo.';
         }
         this.toast.add({ severity: 'error', summary: 'Error al registrarse', detail: msg, life: 6000 });
-      },
-    });
-  }
 
-  // Envía el token de verificación que llegó al correo del usuario
-  verificar(): void {
-    const token = this.tokenInput.trim();
-    if (!token) {
-      this.toast.add({ severity: 'warn', summary: 'Atención', detail: 'Ingresa el código que recibiste en tu correo' });
-      return;
-    }
-
-    this.verificando = true;
-
-    this.auth.verificarEmail(token).subscribe({
-      next: (resp) => {
-        this.verificando = false;
-        this.router.navigate(['/catalogo']).then(() => {
-          this.toast.add({
-            severity: 'success',
-            summary: '¡Cuenta verificada!',
-            detail: resp.mensaje || 'Bienvenido a AgroConecta',
-            life: 5000,
-          });
-        });
-      },
-      error: (err) => {
-        this.verificando = false;
-        const msg =
-          err.error?.detail ||
-          err.error?.error  ||
-          err.error?.token?.[0] ||
-          'Código inválido o expirado. Revisa tu correo.';
-        this.toast.add({ severity: 'error', summary: 'Error de verificación', detail: msg, life: 6000 });
+        // Reset Turnstile on registration failure
+        if (typeof turnstile !== 'undefined' && this.widgetId !== null) {
+          turnstile.reset(this.widgetId);
+          this.captchaToken = null;
+        }
       },
     });
   }

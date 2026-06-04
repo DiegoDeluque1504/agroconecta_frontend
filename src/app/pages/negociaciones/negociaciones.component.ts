@@ -16,6 +16,7 @@ import { NegociacionService } from '../../core/services/negociacion.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PedidoService } from '../../core/services/pedido.service';
 import { NegociacionLista, NegociacionDetalle, Mensaje } from '../../core/models/index';
+import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
 
 @Component({
   selector: 'app-negociaciones',
@@ -146,7 +147,7 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
     const texto = this.nuevoMensaje.trim();
     const id    = this.negociacionActivaId();
     const d     = this.detalle();
-    if (!texto || !id || !d || d.estado !== 'abierta') return;
+    if (!texto || !id || !d || (d.estado !== 'abierta' && d.estado !== 'pedido_creado')) return;
 
     this.enviando.set(true);
     this.negociacionService.enviarTexto(id, texto).subscribe({
@@ -324,7 +325,7 @@ abrirDialogoPedido(): void {
 
   getEstadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {
     const mapa: Record<string, 'success' | 'warn' | 'danger' | 'secondary'> = {
-      abierta: 'success', cerrada: 'secondary', cancelada: 'danger',
+      abierta: 'success', pedido_creado: 'warn', finalizada: 'secondary', cancelada: 'danger',
     };
     return mapa[estado] ?? 'secondary';
   }

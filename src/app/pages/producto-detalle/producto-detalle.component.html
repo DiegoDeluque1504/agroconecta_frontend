@@ -63,7 +63,7 @@
 
         <!-- Precio -->
         <div class="precio-wrap">
-          <span class="precio">${{ p.precio }}</span>
+          <span class="precio">{{ p.precio | moneda }}</span>
           <span class="unidad">por {{ p.unidad_medida }}</span>
         </div>
 

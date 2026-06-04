@@ -231,3 +231,25 @@
   .pedidos-page { grid-template-columns: 1fr; }
   .lista-panel  { max-height: 40vh; }
 }
+
+.cancelacion-info-box {
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.cancelacion-info-box h4 {
+  color: #991b1b !important;
+}
+
+.cancelacion-info-box h4 i {
+  color: #dc2626 !important;
+}
+
+.cancelacion-info-box p {
+  font-size: 0.88rem;
+  color: #7f1d1d;
+  margin: 0.25rem 0;
+}

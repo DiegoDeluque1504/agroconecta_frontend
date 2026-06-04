@@ -148,8 +148,8 @@
         }
       </div>
 
-      <!-- Input (solo si está abierta) -->
-      @if (d.estado === 'abierta') {
+      <!-- Input (solo si está abierta o pedido_creado) -->
+      @if (d.estado === 'abierta' || d.estado === 'pedido_creado') {
         <div class="input-wrap">
           <input
             pInputText
@@ -206,7 +206,7 @@
         </div>
       } @else {
         <div class="chat-cerrado">
-          <i class="pi pi-lock"></i> Esta negociación está {{ d.estado }} y no acepta más mensajes.
+          <i class="pi pi-lock"></i> Esta negociación está {{ d.estado === 'finalizada' ? 'finalizada' : 'cancelada' }} y no acepta más mensajes.
         </div>
       }
 

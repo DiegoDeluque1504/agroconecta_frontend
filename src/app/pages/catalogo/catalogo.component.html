@@ -129,7 +129,7 @@
                 <h3 class="producto-nombre">{{ producto.nombre }}</h3>
 
                 <div class="producto-precio">
-                  ${{ producto.precio }}
+                  {{ producto.precio | moneda }}
                   <span class="producto-unidad">/ {{ producto.unidad_medida }}</span>
                 </div>
 

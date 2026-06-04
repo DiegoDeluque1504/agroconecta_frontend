@@ -38,8 +38,12 @@ export class AuthService {
   ) {}
 
   // Envía email y password al backend, guarda tokens y usuario en localStorage
-  login(email: string, password: string): Observable<RespuestaLogin> {
-    return this.http.post<RespuestaLogin>(`${API}/usuarios/login/`, { email, password }).pipe(
+  login(email: string, password: string, captchaToken?: string): Observable<RespuestaLogin> {
+    const payload: any = { email, password };
+    if (captchaToken) {
+      payload.captcha_token = captchaToken;
+    }
+    return this.http.post<RespuestaLogin>(`${API}/usuarios/login/`, payload).pipe(
       tap((resp) => {
         // Guardar tokens JWT en localStorage para persistir la sesión
         localStorage.setItem('access_token', resp.tokens.access);

@@ -17,6 +17,7 @@ import { TimelineModule } from 'primeng/timeline';
 import { PedidoService } from '../../core/services/pedido.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PedidoLista, PedidoDetalle, EstadoPedido } from '../../core/models/index';
+import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
 
 @Component({
   selector: 'app-pedidos',
@@ -35,6 +36,7 @@ import { PedidoLista, PedidoDetalle, EstadoPedido } from '../../core/models/inde
     TextareaModule,
     SelectModule,
     TimelineModule,
+    MonedaPipe,
   ],
   providers: [MessageService],
   templateUrl: './pedidos.component.html',
@@ -62,6 +64,11 @@ export class PedidosComponent implements OnInit {
   puntuacion = 0;
   comentarioCalif = '';
   calificando = signal(false);
+
+  // Diálogo cancelar pedido (comprador/productor)
+  dialogCancelar = false;
+  motivoCancelacion = '';
+  cancelandoPedido = signal(false);
 
   // Opciones de estado para el selector (productor)
   estadosSiguientes: { label: string; value: EstadoPedido }[] = [];
@@ -105,8 +112,9 @@ export class PedidosComponent implements OnInit {
   // Calcula qué estados puede asignar el productor según el estado actual
   calcularEstadosSiguientes(actual: EstadoPedido): void {
     const flujo: Record<EstadoPedido, EstadoPedido[]> = {
-      confirmado:     ['en_preparacion', 'cancelado'],
-      en_preparacion: ['en_camino', 'cancelado'],
+      pendiente:      ['confirmado', 'cancelado'],
+      confirmado:     ['preparacion', 'cancelado'],
+      preparacion:    ['en_camino', 'cancelado'],
       en_camino:      ['entregado'],
       entregado:      [],
       cancelado:      [],
@@ -171,12 +179,39 @@ export class PedidosComponent implements OnInit {
     });
   }
 
+  abrirDialogCancelar(): void {
+    this.motivoCancelacion = '';
+    this.dialogCancelar = true;
+  }
+
+  confirmarCancelarPedido(): void {
+    const id = this.detalle()?.id;
+    if (!id || !this.motivoCancelacion.trim()) return;
+
+    this.cancelandoPedido.set(true);
+    this.pedidoService.cambiarEstado(id, 'cancelado', this.motivoCancelacion).subscribe({
+      next: (data) => {
+        this.detalle.set(data);
+        this.calcularEstadosSiguientes(data.estado_actual);
+        this.cancelandoPedido.set(false);
+        this.dialogCancelar = false;
+        this.cargarPedidos();
+        this.toast.add({ severity: 'success', summary: 'Listo', detail: 'Pedido cancelado correctamente' });
+      },
+      error: (err) => {
+        this.cancelandoPedido.set(false);
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?.error ?? 'No se pudo cancelar el pedido' });
+      },
+    });
+  }
+
   // ── Helpers UI ────────────────────────────────────────────
 
   getSeverity(estado: EstadoPedido): 'success' | 'warn' | 'danger' | 'info' | 'secondary' {
     const mapa: Record<EstadoPedido, 'success' | 'warn' | 'danger' | 'info' | 'secondary'> = {
+      pendiente:      'secondary',
       confirmado:     'info',
-      en_preparacion: 'warn',
+      preparacion:    'warn',
       en_camino:      'warn',
       entregado:      'success',
       cancelado:      'danger',
@@ -186,8 +221,9 @@ export class PedidosComponent implements OnInit {
 
   labelEstado(estado: EstadoPedido): string {
     const mapa: Record<EstadoPedido, string> = {
+      pendiente:      'Pendiente',
       confirmado:     'Confirmado',
-      en_preparacion: 'En preparación',
+      preparacion:    'En preparación',
       en_camino:      'En camino',
       entregado:      'Entregado',
       cancelado:      'Cancelado',
@@ -197,8 +233,9 @@ export class PedidosComponent implements OnInit {
 
   iconoEstado(estado: EstadoPedido): string {
     const mapa: Record<EstadoPedido, string> = {
+      pendiente:      'pi-clock',
       confirmado:     'pi-check-circle',
-      en_preparacion: 'pi-box',
+      preparacion:    'pi-box',
       en_camino:      'pi-truck',
       entregado:      'pi-verified',
       cancelado:      'pi-times-circle',

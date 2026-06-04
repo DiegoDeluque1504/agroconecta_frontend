@@ -37,7 +37,7 @@ export class VerificarEmailComponent implements OnInit {
         this.cargando.set(false);
 
         setTimeout(() => {
-          this.router.navigate(['/catalogo']);
+          this.router.navigate(['/auth/login']);
         }, 2500);
       },
       error: (err) => {

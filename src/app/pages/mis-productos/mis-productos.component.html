@@ -33,7 +33,7 @@
           <div class="card-body">
             <p-tag [value]="p.estado" [severity]="getEstadoSeverity(p.estado)" />
             <h3>{{ p.nombre }}</h3>
-            <p class="precio">${{ p.precio }} / {{ p.unidad_medida }}</p>
+            <p class="precio">{{ p.precio | moneda }} / {{ p.unidad_medida }}</p>
             <p class="meta">{{ p.cantidad_disponible }} disp. · {{ p.municipio_nombre }}</p>
             <div class="acciones">
               <p-button

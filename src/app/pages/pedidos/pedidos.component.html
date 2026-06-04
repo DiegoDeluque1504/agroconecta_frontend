@@ -35,7 +35,7 @@
             <span class="pedido-meta">
               {{ auth.esProductor() ? p.comprador_nombre : p.productor_nombre }}
             </span>
-            <span class="pedido-precio">$ {{ p.precio_total | number }}</span>
+            <span class="pedido-precio">{{ p.precio_total | moneda }}</span>
           </div>
           <small class="pedido-fecha">{{ formatFecha(p.created_at) }}</small>
         </button>
@@ -81,6 +81,18 @@
             />
           }
 
+          <!-- Cancelar Pedido (visible tanto para productor como para comprador si no está entregado ni cancelado) -->
+          @if (d.estado_actual !== 'entregado' && d.estado_actual !== 'cancelado') {
+            <p-button
+              label="Cancelar pedido"
+              icon="pi pi-times"
+              severity="danger"
+              size="small"
+              [outlined]="true"
+              (onClick)="abrirDialogCancelar()"
+            />
+          }
+
           <!-- Calificar (si está entregado y no has calificado) -->
           @if (d.estado_actual === 'entregado' && !d.ya_califique) {
             <p-button
@@ -102,11 +114,11 @@
         </div>
         <div class="resumen-item">
           <span class="resumen-label">Precio unitario</span>
-          <span class="resumen-valor">$ {{ d.precio_acordado | number }}</span>
+          <span class="resumen-valor">{{ d.precio_acordado | moneda }}</span>
         </div>
         <div class="resumen-item">
           <span class="resumen-label">Total</span>
-          <span class="resumen-valor total">$ {{ d.precio_total | number }}</span>
+          <span class="resumen-valor total">{{ d.precio_total | moneda }}</span>
         </div>
         @if (d.direccion_entrega) {
           <div class="resumen-item">
@@ -115,6 +127,16 @@
           </div>
         }
       </div>
+
+      <!-- Detalles de la cancelación -->
+      @if (d.estado_actual === 'cancelado' && d.motivo_cancelacion) {
+        <div class="seccion cancelacion-info-box">
+          <h4><i class="pi pi-exclamation-triangle"></i> Detalle de la Cancelación</h4>
+          <p><strong>Cancelado por:</strong> {{ d.cancelado_por_nombre || 'N/A' }}</p>
+          <p><strong>Fecha:</strong> {{ formatFecha(d.fecha_cancelacion!) }}</p>
+          <p><strong>Motivo:</strong> {{ d.motivo_cancelacion }}</p>
+        </div>
+      }
 
       <!-- Historial de estados (timeline) -->
       <div class="seccion">
@@ -222,6 +244,37 @@
       [loading]="calificando()"
       [disabled]="puntuacion === 0"
       (onClick)="confirmarCalificacion()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo: cancelar pedido -->
+<p-dialog
+  [(visible)]="dialogCancelar"
+  header="Cancelar Pedido"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+>
+  <div class="dialog-body">
+    <p>¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.</p>
+    <label style="margin-top: 1rem; display: block;">Motivo de la cancelación (requerido)</label>
+    <textarea
+      pTextarea
+      [(ngModel)]="motivoCancelacion"
+      rows="3"
+      class="w-full"
+      placeholder="Escribe el motivo aquí..."
+    ></textarea>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Volver" severity="secondary" [outlined]="true" (onClick)="dialogCancelar = false" />
+    <p-button
+      label="Confirmar cancelación"
+      icon="pi pi-times"
+      severity="danger"
+      [loading]="cancelandoPedido()"
+      [disabled]="!motivoCancelacion.trim()"
+      (onClick)="confirmarCancelarPedido()"
     />
   </ng-template>
 </p-dialog>

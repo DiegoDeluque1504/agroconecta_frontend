@@ -50,8 +50,13 @@
           [class.ng-invalid]="password?.invalid && password?.touched"
         />
         @if (password?.invalid && password?.touched) {
-          <small class="error-msg">Mínimo 6 caracteres</small>
+          <small class="error-msg">Mínimo 8 caracteres, con al menos una letra y un número</small>
         }
+      </div>
+
+      <!-- Cloudflare Turnstile CAPTCHA -->
+      <div class="form-field captcha-container-field">
+        <div id="turnstile-container" class="flex justify-center my-2"></div>
       </div>
 
       <!-- Botón de submit -->

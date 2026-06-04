@@ -11,6 +11,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProductoService } from '../../core/services/producto.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProductoLista } from '../../core/models/index';
+import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
 
 @Component({
   selector: 'app-mis-productos',
@@ -23,6 +24,7 @@ import { ProductoLista } from '../../core/models/index';
     SkeletonModule,
     ToastModule,
     ConfirmDialogModule,
+    MonedaPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './mis-productos.component.html',

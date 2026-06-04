@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { timeout, TimeoutError } from 'rxjs';
@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 import {
   getAxesLockoutMessage,
   getInvalidCredentialsMessage,
@@ -21,6 +22,8 @@ import {
   GUEST_EXPLORATION_MESSAGE,
   GuestExplorationService,
 } from '../../../core/services/guest-exploration.service';
+
+declare var turnstile: any;
 
 @Component({
   selector: 'app-login',
@@ -38,7 +41,7 @@ import {
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -48,6 +51,8 @@ export class LoginComponent implements OnInit {
 
   cargando = false;
   mensajeModoRestringido: string | null = null;
+  widgetId: string | null = null;
+  captchaToken: string | null = null;
 
   ngOnInit(): void {
     if (!this.auth.estaAutenticado()) {
@@ -61,10 +66,41 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  ngAfterViewInit(): void {
+    this.renderCaptcha();
+  }
+
+  renderCaptcha(): void {
+    if (typeof turnstile !== 'undefined') {
+      try {
+        this.widgetId = turnstile.render('#turnstile-container', {
+          sitekey: environment.turnstileSiteKey || '1x00000000000000000000AA',
+          callback: (token: string) => {
+            this.captchaToken = token;
+          },
+          'expired-callback': () => {
+            this.captchaToken = null;
+          },
+          'error-callback': () => {
+            this.captchaToken = null;
+          }
+        });
+      } catch (e) {
+        console.error('Error rendering turnstile:', e);
+      }
+    } else {
+      setTimeout(() => this.renderCaptcha(), 500);
+    }
+  }
+
   // Formulario reactivo con validaciones
   form: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [
+      Validators.required, 
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-zA-Z])(?=.*\d).+$/)
+    ]],
   });
 
   // Getters para acceder fácilmente a los campos en el template
@@ -77,10 +113,19 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    if (!this.captchaToken) {
+      this.toast.add({
+        severity: 'warn',
+        summary: 'Validación requerida',
+        detail: 'Por favor, completa el CAPTCHA antes de continuar.',
+      });
+      return;
+    }
+
     this.cargando = true;
     const { email, password } = this.form.value;
 
-    this.auth.login(email, password).pipe(
+    this.auth.login(email, password, this.captchaToken).pipe(
       timeout(10000) // Corta si el servidor no responde en 10 segundos
     ).subscribe({
       next: () => {
@@ -121,6 +166,12 @@ export class LoginComponent implements OnInit {
           detail: msg,
           life: bloqueado ? 8000 : 5000,
         });
+
+        // Reset Turnstile on login failure
+        if (typeof turnstile !== 'undefined' && this.widgetId !== null) {
+          turnstile.reset(this.widgetId);
+          this.captchaToken = null;
+        }
       },
     });
   }

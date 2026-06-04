@@ -31,6 +31,7 @@ import {
 } from '../../core/utils/leaflet-map.util';
 import { AuthService } from '../../core/services/auth.service';
 import { ProductoDetalle } from '../../core/models/index';
+import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
 
 @Component({
   selector: 'app-producto-detalle',
@@ -44,6 +45,7 @@ import { ProductoDetalle } from '../../core/models/index';
     SkeletonModule,
     RatingModule,
     ToastModule,
+    MonedaPipe,
   ],
   providers: [MessageService],
   templateUrl: './producto-detalle.component.html',

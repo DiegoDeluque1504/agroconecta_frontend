@@ -5,45 +5,24 @@
 
     <!-- Pantalla de verificación de email (aparece tras registrarse) -->
     @if (exitoso) {
-      <div class="success-box">
+      <div class="success-box text-center">
         <div class="success-icon">✉️</div>
-        <h2>Verifica tu correo</h2>
+        <h2>¡Registro exitoso!</h2>
         <p>
-          Enviamos un código de verificación a<br>
+          Hemos enviado un enlace de verificación a:<br>
           <strong>{{ emailRegistrado }}</strong>
         </p>
-        <p class="verify-hint">Revisa tu bandeja de entrada (y la carpeta de spam).</p>
+        <p class="verify-hint">Por favor, haz clic en el enlace del correo para activar tu cuenta (revisa la bandeja de spam si no lo ves).</p>
 
-        <!-- Campo del token -->
-        <div class="form-field verify-field">
-          <label for="token">Código de verificación</label>
-          <input
-            id="token"
-            type="text"
-            pInputText
-            [(ngModel)]="tokenInput"
-            placeholder="Pega aquí el código recibido"
-            class="w-full"
-            (keydown.enter)="verificar()"
-          />
-        </div>
-
-        <!-- Botón verificar -->
+        <!-- Botón para volver al login -->
         <p-button
-          label="Verificar cuenta"
-          icon="pi pi-check-circle"
-          [loading]="verificando"
-          [disabled]="!tokenInput.trim()"
-          (onClick)="verificar()"
-          styleClass="w-full mt-2"
+          label="Ir al inicio de sesión"
+          icon="pi pi-sign-in"
+          routerLink="/auth/login"
+          styleClass="w-full mt-4"
         />
-
-        <!-- Enlace al login por si ya verificó antes -->
-        <p class="auth-footer mt-3">
-          ¿Ya verificaste tu cuenta?
-          <a routerLink="/auth/login">Inicia sesión</a>
-        </p>
       </div>
+
 
     } @else {
 
@@ -96,7 +75,7 @@
             inputStyleClass="w-full"
           />
           @if (password?.invalid && password?.touched) {
-            <small class="error-msg">Mínimo 8 caracteres</small>
+            <small class="error-msg">Mínimo 8 caracteres, con al menos una letra y un número</small>
           }
         </div>
 
@@ -139,6 +118,11 @@
               </label>
             </div>
           </div>
+        </div>
+
+        <!-- Cloudflare Turnstile CAPTCHA -->
+        <div class="form-field captcha-container-field">
+          <div id="turnstile-container" class="flex justify-center my-2"></div>
         </div>
 
         <!-- Botón submit -->

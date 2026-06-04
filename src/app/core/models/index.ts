@@ -160,7 +160,7 @@ export interface Mensaje {
 // ------------------------------------------------------------
 export interface NegociacionLista {
   id: number;
-  estado: 'abierta' | 'cerrada' | 'cancelada';
+  estado: 'abierta' | 'pedido_creado' | 'finalizada' | 'cancelada';
   producto_nombre: string;
   producto_foto: string | null;
   comprador_nombre: string;
@@ -174,7 +174,7 @@ export interface NegociacionLista {
 // Versión completa con todos los mensajes
 export interface NegociacionDetalle {
   id: number;
-  estado: 'abierta' | 'cerrada' | 'cancelada';
+  estado: 'abierta' | 'pedido_creado' | 'finalizada' | 'cancelada';
   producto_id: number;
   producto_nombre: string;
   comprador_id: number;
@@ -204,8 +204,9 @@ export interface PedidoLista {
 
 // Estados posibles de un pedido
 export type EstadoPedido =
+  | 'pendiente'
   | 'confirmado'
-  | 'en_preparacion'
+  | 'preparacion'
   | 'en_camino'
   | 'entregado'
   | 'cancelado';
@@ -226,6 +227,10 @@ export interface PedidoDetalle {
   historial_estados: HistorialEstado[];
   calificaciones: Calificacion[];
   ya_califique: boolean;
+  cancelado_por: number | null;
+  cancelado_por_nombre: string | null;
+  motivo_cancelacion: string | null;
+  fecha_cancelacion: string | null;
   created_at: string;
   updated_at: string;
 }
