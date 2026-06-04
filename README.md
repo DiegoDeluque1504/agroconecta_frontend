@@ -10,6 +10,17 @@ Marketplace agrícola digital que conecta **productores rurales** con **comprado
 
 ---
 
+## 🚀 Refactorización de Seguridad y Funcional (Junio 2026)
+
+- **Validación de CAPTCHA (Cloudflare Turnstile):** Integración de widget de Turnstile en las páginas de login y registro, deteniendo envíos automáticos y previniendo registros maliciosos.
+- **Validación Estricta de Contraseñas:** Campos de entrada de contraseña con validación reactiva en el cliente (mínimo 8 caracteres, al menos una letra y un número) acompañados de mensajes descriptivos en la interfaz.
+- **Formato de Moneda Limpio (Pipe Moneda):** Creación del pipe personalizado `moneda` para mostrar precios sin decimales y formateados con puntos (ej. `$12.000`), aplicado uniformemente en el catálogo, detalle de producto, negociaciones, perfil y listado de pedidos.
+- **Flujo de Negociación Rediseñado:** Chat activo e ininterrumpido en el estado `pedido_creado`. La creación de un pedido por parte del productor ya no bloquea la mensajería ni los acuerdos continuos entre las partes.
+- **Cancelación Mutua de Pedidos:** Implementación de opción de cancelación para compradores y productores con motivo obligatorio. Visualización de detalles de cancelación (fecha, autor y motivo) en una sección premium estilizada.
+- **Flujo de Registro y Verificación de Correo Simplificado:** Redirección automática de la verificación por enlace directo al login de la plataforma tras mostrar el mensaje de activación exitosa, eliminando la inserción de tokens manuales.
+
+---
+
 ## 🚀 Mejoras Recientes (Mayo 2026)
 
 - **Mensajería en tiempo real (Polling Inteligente):** Implementación de polling silencioso y reactivo cada 15 segundos. La vista del chat se actualiza de forma transparente en segundo plano únicamente al recibir nuevos mensajes, evitando parpadeos de skeletons o interrupciones en la lectura del usuario.
