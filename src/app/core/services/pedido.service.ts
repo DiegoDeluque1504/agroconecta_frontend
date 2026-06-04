@@ -44,7 +44,7 @@ export class PedidoService {
     });
   }
 
-  // POST /pedidos/crear/{negociacion_id}/ — crea un pedido a partir de una negociación cerrada
+  // POST /pedidos/crear/{negociacion_id}/ — crea un pedido desde una negociación abierta
   crearDesdeNegociacion(
     negociacionId: number,
     cantidadAcordada: number,

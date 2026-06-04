@@ -253,14 +253,14 @@ export class NegociacionesComponent implements OnInit, OnDestroy, AfterViewCheck
 
   // ── Estado ─────────────────────────────────────────────
 
-  cambiarEstado(estado: 'cerrada' | 'cancelada'): void {
+  cambiarEstado(estado: 'finalizada' | 'cancelada'): void {
     const id = this.negociacionActivaId();
     if (!id) return;
     this.negociacionService.cambiarEstado(id, estado).subscribe({
       next: (data) => {
         this.detalle.set(data);
         this.cargarLista();
-        this.toast.add({ severity: 'success', summary: 'Listo', detail: `Negociación ${estado}` });
+        this.toast.add({ severity: 'success', summary: 'Listo', detail: `Negociación ${this.labelEstadoNegociacion(estado)}` });
       },
       error: (err) => {
         this.toast.add({ severity: 'error', summary: 'Error', detail: err.error?.error ?? 'No se pudo cambiar el estado' });
@@ -321,6 +321,16 @@ abrirDialogoPedido(): void {
     const d   = this.detalle();
     const uid = this.auth.usuario()?.id;
     return !!d && !!uid && d.productor_id === uid;
+  }
+
+  labelEstadoNegociacion(estado: string): string {
+    const mapa: Record<string, string> = {
+      abierta: 'Abierta',
+      pedido_creado: 'Pedido creado',
+      finalizada: 'Finalizada',
+      cancelada: 'Cancelada',
+    };
+    return mapa[estado] ?? estado;
   }
 
   getEstadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {

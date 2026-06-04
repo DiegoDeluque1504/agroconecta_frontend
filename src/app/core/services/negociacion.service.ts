@@ -47,7 +47,7 @@ export class NegociacionService {
   // POST /negociaciones/{id}/estado/ — cerrar o cancelar
   cambiarEstado(
     negociacionId: number,
-    estado: 'cerrada' | 'cancelada'
+    estado: 'finalizada' | 'cancelada'
   ): Observable<NegociacionDetalle> {
     return this.http.post<NegociacionDetalle>(
       `${API}/negociaciones/${negociacionId}/estado/`,

@@ -50,7 +50,7 @@
               }
             </div>
           </div>
-          <p-tag [value]="chat.estado" [severity]="getEstadoSeverity(chat.estado)" />
+          <p-tag [value]="labelEstadoNegociacion(chat.estado)" [severity]="getEstadoSeverity(chat.estado)" />
         </button>
       }
     }
@@ -89,7 +89,7 @@
         <small>{{ d.comprador_nombre }} ↔ {{ d.productor_nombre }}</small>
       </div>
     </div>
-    <p-tag [value]="d.estado" [severity]="getEstadoSeverity(d.estado)" />
+    <p-tag [value]="labelEstadoNegociacion(d.estado)" [severity]="getEstadoSeverity(d.estado)" />
   </div>
 
   @if (d.estado === 'abierta') {
@@ -100,7 +100,7 @@
           icon="pi pi-check"
           severity="secondary"
           size="small"
-          (onClick)="cambiarEstado('cerrada')"
+          (onClick)="cambiarEstado('finalizada')"
         />
       }
       <p-button
