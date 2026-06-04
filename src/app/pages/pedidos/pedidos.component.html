@@ -33,7 +33,7 @@
           </div>
           <div class="pedido-item-bottom">
             <span class="pedido-meta">
-              {{ auth.esProductor() ? p.comprador_nombre : p.productor_nombre }}
+              {{ esMiPedidoComoProductor(p) ? p.comprador_nombre : p.productor_nombre }}
             </span>
             <span class="pedido-precio">{{ p.precio_total | moneda }}</span>
           </div>
@@ -72,7 +72,7 @@
           <p-tag [value]="labelEstado(d.estado_actual)" [severity]="getSeverity(d.estado_actual)" />
 
           <!-- El productor puede avanzar el estado -->
-          @if (auth.esProductor() && estadosSiguientes.length > 0) {
+          @if (esMiPedidoComoProductor(d) && estadosSiguientes.length > 0) {
             <p-button
               label="Actualizar estado"
               icon="pi pi-refresh"

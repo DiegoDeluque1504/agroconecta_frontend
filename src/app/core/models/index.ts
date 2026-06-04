@@ -167,6 +167,7 @@ export interface NegociacionLista {
   productor_nombre: string;
   ultimo_mensaje: string | null;
   mensajes_no_leidos: number;
+  pedido_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -182,6 +183,7 @@ export interface NegociacionDetalle {
   productor_id: number;
   productor_nombre: string;
   mensajes: Mensaje[];
+  pedido_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -197,6 +199,8 @@ export interface PedidoLista {
   precio_acordado: string;
   precio_total: string;
   producto_nombre: string;
+  productor_id: number;
+  comprador_id: number;
   comprador_nombre: string;
   productor_nombre: string;
   created_at: string;
@@ -222,6 +226,8 @@ export interface PedidoDetalle {
   notas_entrega: string | null;
   producto_nombre: string;
   producto_id: number;
+  productor_id: number;
+  comprador_id: number;
   comprador_nombre: string;
   productor_nombre: string;
   historial_estados: HistorialEstado[];

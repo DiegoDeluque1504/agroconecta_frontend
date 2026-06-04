@@ -207,6 +207,12 @@ export class PedidosComponent implements OnInit {
 
   // ── Helpers UI ────────────────────────────────────────────
 
+  esMiPedidoComoProductor(d: PedidoDetalle | PedidoLista | null): boolean {
+    if (!d) return false;
+    const uid = this.auth.usuario()?.id;
+    return d.productor_id === uid;
+  }
+
   getSeverity(estado: EstadoPedido): 'success' | 'warn' | 'danger' | 'info' | 'secondary' {
     const mapa: Record<EstadoPedido, 'success' | 'warn' | 'danger' | 'info' | 'secondary'> = {
       pendiente:      'secondary',
@@ -221,8 +227,8 @@ export class PedidosComponent implements OnInit {
 
   labelEstado(estado: EstadoPedido): string {
     const mapa: Record<EstadoPedido, string> = {
-      pendiente:      'Pendiente',
-      confirmado:     'Confirmado',
+      pendiente:      'Pedido creado',
+      confirmado:     'Pedido activo',
       preparacion:    'En preparación',
       en_camino:      'En camino',
       entregado:      'Entregado',

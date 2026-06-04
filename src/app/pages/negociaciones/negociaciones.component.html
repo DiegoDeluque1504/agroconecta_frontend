@@ -111,9 +111,9 @@
         [outlined]="true"
         (onClick)="cambiarEstado('cancelada')"
       />
-      @if (soyProductorEnChat()) {
+      @if (soyProductorEnChat() && !d.pedido_id) {
         <p-button
-          label="Crear Pedido"
+          label="Crear propuesta de pedido"
           icon="pi pi-shopping-bag"
           severity="success"
           size="small"
@@ -282,7 +282,7 @@
         (onClick)="mostrarDialogoPedido.set(false)"
       />
       <p-button
-        label="Confirmar pedido"
+        label="Confirmar propuesta de pedido"
         icon="pi pi-check"
         severity="success"
         [loading]="creandoPedido()"
