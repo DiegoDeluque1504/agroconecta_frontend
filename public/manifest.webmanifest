@@ -1,7 +1,7 @@
 {
   "name": "AgroConecta",
   "short_name": "AgroConecta",
-  "description": "Marketplace agrícola para La Guajira",
+  "description": "Portal de negocios agrícolas para La Guajira",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
