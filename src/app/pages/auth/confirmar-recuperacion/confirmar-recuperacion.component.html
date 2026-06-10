@@ -1,0 +1,119 @@
+<p-toast />
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo y título -->
+    <div class="auth-header">
+      <img src="icons/icon-192x192.png" alt="AgroConecta" class="auth-logo" />
+      <h1>AgroConecta</h1>
+      <p>Nueva contraseña</p>
+    </div>
+
+    <!-- Estado: éxito -->
+    @if (exitoso) {
+      <div class="success-banner">
+        <div class="success-icon">
+          <i class="pi pi-check"></i>
+        </div>
+        <h2>¡Contraseña actualizada!</h2>
+        <p>
+          Tu contraseña ha sido restablecida exitosamente.
+          Redirigiendo al inicio de sesión en <strong>{{ countdown }}s</strong>...
+        </p>
+        <a routerLink="/auth/login" class="btn-login">
+          Ir al login ahora
+        </a>
+      </div>
+    }
+
+    <!-- Estado: token inválido o expirado -->
+    @if (tokenInvalido) {
+      <div class="error-banner">
+        <div class="error-icon">
+          <i class="pi pi-times"></i>
+        </div>
+        <h2>Enlace inválido o expirado</h2>
+        <p>
+          El enlace de recuperación no es válido o ya expiró (duran 1 hora).
+          Solicita uno nuevo.
+        </p>
+        <a routerLink="/auth/recuperar-password" class="btn-solicitar">
+          Solicitar nuevo enlace
+        </a>
+      </div>
+    }
+
+    <!-- Estado: formulario normal -->
+    @if (!exitoso && !tokenInvalido) {
+      <p class="intro-text">
+        Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres,
+        con letras y números.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+
+        <div class="form-field">
+          <label for="password_nueva">Nueva contraseña</label>
+          <p-password
+            id="password_nueva"
+            formControlName="password_nueva"
+            placeholder="••••••••"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            promptLabel="Ingresa una contraseña"
+            weakLabel="Débil"
+            mediumLabel="Media"
+            strongLabel="Fuerte"
+            [class.ng-invalid]="passwordNueva?.invalid && passwordNueva?.touched"
+          />
+          @if (passwordNueva?.invalid && passwordNueva?.touched) {
+            <small class="error-msg">Mínimo 8 caracteres, con letras y números</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="password_confirmar">Confirmar contraseña</label>
+          <p-password
+            id="password_confirmar"
+            formControlName="password_confirmar"
+            placeholder="••••••••"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            [class.ng-invalid]="form.hasError('noCoinciden') && passwordConfirmar?.touched"
+          />
+          @if (form.hasError('noCoinciden') && passwordConfirmar?.touched) {
+            <small class="error-msg">Las contraseñas no coinciden</small>
+          }
+        </div>
+
+        @if (errorServidor) {
+          <div class="server-error">
+            <i class="pi pi-exclamation-triangle"></i>
+            {{ errorServidor }}
+          </div>
+        }
+
+        <p-button
+          type="submit"
+          label="Restablecer contraseña"
+          [loading]="cargando"
+          styleClass="w-full mt-2"
+        />
+      </form>
+    }
+
+    <!-- Volver al login -->
+    @if (!exitoso) {
+      <p class="auth-footer">
+        <a routerLink="/auth/login">
+          <i class="pi pi-arrow-left"></i> Volver al inicio de sesión
+        </a>
+      </p>
+    }
+
+  </div>
+</div>

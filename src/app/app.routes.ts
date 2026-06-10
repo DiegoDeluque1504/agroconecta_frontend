@@ -31,6 +31,20 @@ export const routes: Routes = [
             (m) => m.VerificarEmailComponent
           ),
       },
+      {
+        path: 'recuperar-password',
+        loadComponent: () =>
+          import('./pages/auth/recuperar-password/recuperar-password.component').then(
+            (m) => m.RecuperarPasswordComponent
+          ),
+      },
+      {
+        path: 'confirmar-recuperacion',
+        loadComponent: () =>
+          import('./pages/auth/confirmar-recuperacion/confirmar-recuperacion.component').then(
+            (m) => m.ConfirmarRecuperacionComponent
+          ),
+      },
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },

@@ -105,6 +105,16 @@ export class AuthService {
     );
   }
 
+  // Solicita el enlace de restablecimiento de contrasena
+  solicitarRecuperacion(email: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${API}/usuarios/recuperar-password/`, { email });
+  }
+
+  // Confirma el restablecimiento con el token y la nueva contrasena
+  confirmarRecuperacion(token: string, password_nueva: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${API}/usuarios/confirmar-recuperacion/`, { token, password_nueva });
+  }
+
   // Carga el usuario desde localStorage al iniciar la app (para mantener sesión activa)
   private cargarUsuario(): Usuario | null {
     const u = localStorage.getItem('usuario');

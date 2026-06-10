@@ -114,3 +114,20 @@
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
+/* Enlace de recuperación de contraseña */
+.forgot-password-link {
+  text-align: right;
+  margin-top: -0.5rem;
+}
+
+.forgot-password-link a {
+  color: #1a7a46;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+  text-decoration: underline;
+}
