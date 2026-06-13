@@ -112,21 +112,15 @@ export class RegistroComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    if (!this.captchaToken) {
-      this.toast.add({
-        severity: 'warn',
-        summary: 'Validación requerida',
-        detail: 'Por favor, completa el CAPTCHA antes de continuar.',
-      });
-      return;
-    }
-
     this.cargando = true;
 
-    const payload = {
+    const payload: any = {
       ...this.form.value,
-      captcha_token: this.captchaToken
     };
+
+    if (this.captchaToken) {
+      payload.captcha_token = this.captchaToken;
+    }
 
     this.auth.registro(payload).pipe(
       timeout(15000)

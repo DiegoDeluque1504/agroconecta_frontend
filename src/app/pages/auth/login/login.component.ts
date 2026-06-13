@@ -113,19 +113,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    if (!this.captchaToken) {
-      this.toast.add({
-        severity: 'warn',
-        summary: 'Validación requerida',
-        detail: 'Por favor, completa el CAPTCHA antes de continuar.',
-      });
-      return;
-    }
-
     this.cargando = true;
     const { email, password } = this.form.value;
 
-    this.auth.login(email, password, this.captchaToken).pipe(
+    this.auth.login(email, password).pipe(
       timeout(10000) // Corta si el servidor no responde en 10 segundos
     ).subscribe({
       next: () => {
