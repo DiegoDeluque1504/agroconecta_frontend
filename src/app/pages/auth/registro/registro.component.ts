@@ -112,6 +112,11 @@ export class RegistroComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    if (!this.captchaToken) {
+      this.toast.add({ severity: 'warn', summary: 'Atención', detail: 'Por favor completa el captcha antes de continuar.' });
+      return;
+    }
+
     this.cargando = true;
 
     const payload: any = {

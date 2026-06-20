@@ -113,10 +113,15 @@ export class LoginComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    if (!this.captchaToken) {
+      this.toast.add({ severity: 'warn', summary: 'Atención', detail: 'Por favor completa el captcha antes de continuar.' });
+      return;
+    }
+
     this.cargando = true;
     const { email, password } = this.form.value;
 
-    this.auth.login(email, password).pipe(
+    this.auth.login(email, password, this.captchaToken).pipe(
       timeout(10000) // Corta si el servidor no responde en 10 segundos
     ).subscribe({
       next: () => {
