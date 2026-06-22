@@ -18,6 +18,7 @@ import { PedidoService } from '../../core/services/pedido.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PedidoLista, PedidoDetalle, EstadoPedido } from '../../core/models/index';
 import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
+import { CantidadPipe } from '../../shared/pipes/cantidad.pipe';
 
 @Component({
   selector: 'app-pedidos',
@@ -37,6 +38,7 @@ import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
     SelectModule,
     TimelineModule,
     MonedaPipe,
+    CantidadPipe,
   ],
   providers: [MessageService],
   templateUrl: './pedidos.component.html',
