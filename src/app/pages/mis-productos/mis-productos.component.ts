@@ -12,6 +12,7 @@ import { ProductoService } from '../../core/services/producto.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProductoLista } from '../../core/models/index';
 import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
+import { CantidadPipe } from '../../shared/pipes/cantidad.pipe';
 
 @Component({
   selector: 'app-mis-productos',
@@ -25,6 +26,7 @@ import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
     ToastModule,
     ConfirmDialogModule,
     MonedaPipe,
+    CantidadPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './mis-productos.component.html',

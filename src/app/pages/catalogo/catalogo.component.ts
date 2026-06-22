@@ -16,6 +16,7 @@ import { MessageService } from 'primeng/api';
 import { ProductoService, FiltrosCatalogo } from '../../core/services/producto.service';
 import { ProductoLista, CategoriaProducto } from '../../core/models/index';
 import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
+import { CantidadPipe } from '../../shared/pipes/cantidad.pipe';
 
 @Component({
   selector: 'app-catalogo',
@@ -31,6 +32,7 @@ import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
     ButtonModule,
     ToastModule,
     MonedaPipe,
+    CantidadPipe,
   ],
   providers: [MessageService],
   templateUrl: './catalogo.component.html',

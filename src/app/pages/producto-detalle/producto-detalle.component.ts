@@ -32,6 +32,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ProductoDetalle } from '../../core/models/index';
 import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
+import { CantidadPipe } from '../../shared/pipes/cantidad.pipe';
 
 @Component({
   selector: 'app-producto-detalle',
@@ -46,6 +47,7 @@ import { MonedaPipe } from '../../shared/pipes/moneda.pipe';
     RatingModule,
     ToastModule,
     MonedaPipe,
+    CantidadPipe,
   ],
   providers: [MessageService],
   templateUrl: './producto-detalle.component.html',
