@@ -37,7 +37,6 @@
               "src/styles.css",
               "node_modules/leaflet/dist/leaflet.css"
             ],
-
             "allowedCommonJsDependencies": [
               "leaflet"
             ]
@@ -51,6 +50,11 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
+              "optimization": {
+                "fonts": {
+                  "inline": false
+                }
+              },
 
               "budgets": [
                 {
